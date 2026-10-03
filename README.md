@@ -111,7 +111,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open http://localhost:3000. With an empty vault address, the app clearly shows **Demo Mode**. It starts with simulated 100 available USDG and 400 wallet USDG. Simulated roles use no wallet signatures or blockchain transactions, and never show fabricated Arbiscan links. Reset demo returns to that initial state.
+Open http://localhost:3000. The example configuration connects to the deployed Arbitrum Sepolia vault. For **Demo Mode**, clear `NEXT_PUBLIC_COVA_VAULT_ADDRESS` in `.env.local` and restart. Demo starts with simulated 100 available USDG and 400 wallet USDG. Simulated roles use no wallet signatures or blockchain transactions and never show fabricated Arbiscan links. Reset demo returns to that initial state.
 
 ### Real local transactions with Anvil
 
@@ -169,9 +169,15 @@ Fork tests are opt-in: the default suite requires no network. The fork funds a t
 
 ## Deployment
 
-**CovaVault has not been broadcast to Arbitrum Sepolia in this handoff.** Deployment credentials were unavailable. The local Anvil deployment and official USDG fork tests validate execution; their addresses/hashes are not public deployments.
+**CovaVault is deployed on Arbitrum Sepolia:** `0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428`.
 
-Create an ignored `.env` with the actual deployer key, RPC and official USDG address. Fund that deployer with Arbitrum Sepolia ETH. From the repository root:
+- [Deployment transaction](https://sepolia.arbiscan.io/tx/0x930e603ac6bdd58ae0e699365a421eecfd47f2545c0d056de69c0f8c78cb17cb), confirmed at block 315383406.
+- [Sourcify source verification](https://repo.sourcify.dev/421614/0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428): creation and runtime both exact matches.
+- [Blockscout verified source](https://arbitrum-sepolia.blockscout.com/address/0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428?tab=contract).
+
+Public evidence and compiler/source binding are in `deployments/arbitrum-sepolia.json`. The frontend's ignored local configuration and `.env.example` use this vault. Production build and a live read check passed. Signed customer/merchant payments on the public network still need faucet USDG and two real wallet accounts. Arbiscan source verification remains pending because Sourcify's automatic forwarding reached its daily submission limit.
+
+Use the existing vault for development and the demo. Only run the following when intentionally deploying a new instance: create an ignored `.env` with the deployer key, RPC and official USDG address, and fund the deployer with Arbitrum Sepolia ETH. From the repository root:
 
 ```bash
 set -a
@@ -217,7 +223,8 @@ Demo Mode follows the same accounting with labelled simulated roles. A single re
 
 ## Known Limitations
 
-- Public vault deployment and an actual funded customer/merchant Arbitrum browser session remain external setup steps; no deployment is claimed without a broadcast.
+- The public vault is deployed and verified; the funded two-wallet Arbitrum payment lifecycle remains to be recorded.
+- Frontend hosting at a shared public URL remains to be set up; local development/production previews are available.
 - Holds use normal customer transactions. EIP-712 signatures and relayers are deferred.
 - Expiry cleanup requires a transaction; no scheduler runs automatically.
 - Human-readable references and action receipt links are browser-local. Hold discovery, amounts, expiry and status remain onchain and recover across browsers.
@@ -226,8 +233,10 @@ Demo Mode follows the same accounting with labelled simulated roles. A single re
 
 ## Future Roadmap
 
-1. Deploy/verify the vault on Arbitrum Sepolia and record a two-wallet demo with official faucet USDG.
-2. Add EIP-712 customer authorizations with domain binding, nonces and replay tests, then a small merchant SDK.
-3. Add indexing and shared receipt/reference history for integrations; address dependency advisories and commission a security audit before production.
+1. Fund customer/merchant wallets and record the full public-network USDG demo.
+2. Complete the frontend redesign, then host a shared demo URL.
+3. Consider shared receipt/reference history, then EIP-712 authorizations and a small merchant SDK after the live demo is stable.
+
+Arya's assigned first task is frontend redesign only; ownership of other remaining work is undecided. See `docs/TEAM-NEXT-STEPS.md` for acceptance checks and his ready-to-use brief. Dependency advisories and a security audit must be addressed before production use.
 
 Later: relayers, merchant APIs, embedded checkout, account abstraction, multiple settlement assets, merchant analytics and carefully scoped dispute extensions.

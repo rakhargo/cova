@@ -18,15 +18,17 @@ The local integration runs actual ERC-20 transactions: approve/deposit100 → re
 
 Each Foundry invariant runs 128 sequences of64 calls (8,192 calls per invariant), zero handler reverts. Fuzz tests use256 runs. Unit/security coverage includes permissions, partial/full/multiple captures, exact expiry boundaries, overflow, history pagination, donations, fees, false/no-return tokens and cross-function reentrancy. See `contracts/VALIDATION.md` for details.
 
-Browser checks exercise Court20/14/6, EV30/17.42/12.58, approval/deposit, invalid precision, mobile390px overflow, wrong-chain switching, rejected wallet approval, actual local deposits/withdrawals, merchant account switching, permission separation, chain-time expiry and RPC Retry. The injected browser test provider uses unlocked Anvil accounts only and is excluded from production code.
+Browser checks exercise Court 20/14/6, EV 30/17.42/12.58, approval/deposit, invalid precision, mobile390px overflow, wrong-chain switching, rejected wallet approval, actual local deposits/withdrawals, merchant account switching, permission separation, chain-time expiry and RPC Retry. The injected browser test provider uses unlocked Anvil accounts only and is excluded from production code.
 
 Review found and fixed cancellation/replacement handling, deployment Retry recovery and wall-clock expiry controls. Repricing updates the hash; cancelled/different transactions never confirm the original payment. Live controls use chain time. Local metadata cannot override contract accounting/status.
 
-Official USDG `0xFFC95faa3d63Cde504a05B567C600B78C0b41892` was checked against Paxos docs and RPC: deployed code, symbol USDG, six decimals, chain421614. Two independent fork runs passed actual token approval/transfer flows. Fork customers are funded only in the local fork through a cheatcode; no public transaction or faucet acquisition is claimed.
+Official USDG `0xFFC95faa3d63Cde504a05B567C600B78C0b41892` was checked against Paxos docs and RPC: deployed code, symbol USDG, six decimals, chain 421614. Two independent fork runs passed actual token approval/transfer flows. Fork customers are funded only in the local fork through a cheatcode; no public transaction or faucet acquisition is claimed.
 
 ## Deployment status
 
-No Arbitrum Sepolia deployment credentials were available. No public CovaVault address is claimed. Local deployment used Anvil chain31337 and the clearly labelled **MockUSDG test fixture**. Generated addresses are in ignored `local-deployment.json`, not public deployments. README contains exact live deployment and two-wallet demo commands.
+The initial build used local Anvil and an official USDG fork. On 2026-10-03 the user supplied deployment credentials and authorized broadcasting. CovaVault was deployed at `0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428`, transaction `0x930e603ac6bdd58ae0e699365a421eecfd47f2545c0d056de69c0f8c78cb17cb`, block 315383406. Receipt succeeded, runtime matched the compiled artifact after masking immutable token slots, and `token()` matched official USDG. Initial `totalLiability()` was zero.
+
+Sourcify verified exact creation/runtime matches; Blockscout also returned Pass - Verified. Sourcify's automatic Arbiscan forwarding hit its daily submission quota. `deployments/arbitrum-sepolia.json` records the public evidence. The production frontend built against this actual vault, and a read-only browser wallet-provider check read the live zero balances. This check did not sign or broadcast payment transactions. The deployer had no USDG; the funded public-network customer/merchant lifecycle remains pending.
 
 ## Dependency audit
 
@@ -42,6 +44,6 @@ The first GitHub run exposed missing optional WASM transitive entries in the npm
 
 Next's detached TypeScript child process produced empty output inside the restricted process sandbox; the production build passed with normal local process permission. Foundry's global signature-cache write warning did not affect successful test/format exit codes. Coverage has a supplementary Solar/source-anchor tooling issue documented in `contracts/VALIDATION.md`.
 
-Public deployment, funded Arbitrum wallet testing and public Arbiscan receipts remain external setup. No EIP-712, relayer, cleanup scheduler, shared reference/receipt index, disputes or production audit. UI loads all pages of a wallet's onchain history. USDG issuer restrictions remain external dependencies; token donation surplus has no rescue path.
+Funded Arbitrum customer/merchant payment testing and its payment receipts remain pending; the public deployment receipt exists. Shared frontend hosting is also pending. No EIP-712, relayer, cleanup scheduler, shared reference/receipt index, disputes or production audit. UI loads all pages of a wallet's onchain history. USDG issuer restrictions remain external dependencies; token donation surplus has no rescue path.
 
 Original PRD and provided logo asset are preserved. During the initial build, the sandbox exposed a protected placeholder `.git` and no Git repository was initialized. The follow-up publication request authorizes Git initialization, separate commits and publishing to `rakhargo/cova`. Deployment credentials remain outside version control.

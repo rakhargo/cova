@@ -18,3 +18,5 @@ Reserved funds must never be withdrawable or cancelled by the customer before ex
 Repository contains PRD.md only and a protected placeholder .git directory; it is not an initialized Git repository. Implement directly in the authorized workspace and preserve PRD.md. No deployment secret detected. Official Paxos token verified at https://docs.paxos.com/guides/stablecoin/usdg/testnet on 2026-10-03.
 
 Final verification: 62 default contract tests + 2 official USDG fork tests, 8 domain/transaction tests, 6 browser tests, real Anvil lifecycle, TypeScript, lint and production build passed. No public deployment credentials; README and docs/VALIDATION.md record the exact external setup.
+
+Follow-up 2026-10-03: repository published publicly at github.com/rakhargo/cova; separate commits and GitHub CI passed. User supplied credentials and authorized deployment. Vault deployed on Arbitrum Sepolia, confirmed and source-verified through Sourcify/Blockscout; live frontend configuration updated. Full funded public payment testing remains pending. Arya's first assigned task is frontend redesign only; other ownership remains undecided. Current handoff is docs/TEAM-NEXT-STEPS.md.

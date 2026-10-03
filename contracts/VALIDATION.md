@@ -30,4 +30,4 @@ Foundry also warned that its global signature cache could not be written in the 
 
 ## Remaining external requirements
 
-Public deployment requires an authorized funded deployment key and RPC configuration. No Arbitrum Sepolia vault deployment is claimed here. The official token's external freeze/upgrade behavior remains an underlying token dependency. The vault supports a standard non-rebasing token; donations have no rescue path; EIP-712 and settlement reversal are outside this MVP.
+The follow-up deployment is confirmed on Arbitrum Sepolia at `0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428`; see `../deployments/arbitrum-sepolia.json` for its transaction and exact source-verification evidence. A funded two-wallet public payment lifecycle remains to be exercised. The official token's external freeze/upgrade behavior remains an underlying token dependency. The vault supports a standard non-rebasing token; donations have no rescue path; EIP-712 and settlement reversal are outside this MVP.
