@@ -1,0 +1,12 @@
+node_modules/
+.next*/
+.env*
+!.env.example
+*.tsbuildinfo
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+playwright-report/
+test-results/
+local-deployment.json
+.superpowers/
