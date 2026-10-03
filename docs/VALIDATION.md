@@ -2,7 +2,7 @@
 
 | Check | Result |
 | --- | --- |
-| Dependency installation | Completed; reproducible package-lock.json |
+| Dependency installation | Completed; a real clean `npm ci` with npm11.21.0 passed in an empty temporary directory |
 | TypeScript / lint / production build | Passed; Next.js prerenders `/` and `/_not-found` |
 | Domain and transaction tests | 8 passed, 0 failed |
 | Foundry default suite | 62 passed, 0 failed; 2 optional fork tests skipped without RPC |
@@ -37,6 +37,8 @@ Source: https://github.com/advisories/GHSA-vfj7-8cjw-p6xm
 Compatible overrides update WebSocket, URL decoding and UUID dependencies. The app imports the injected connector from `@wagmi/core` to avoid unrelated wallet SDK bundling. Installation emits a legacy React peer warning from an unused inherited connector dependency. Typecheck, lint, build and browser flows pass on React19.3.0.
 
 ## Runner and product limits
+
+The first GitHub run exposed missing optional WASM transitive entries in the npm11.6.2 lockfile. Regenerating it with npm11.21.0 in an empty directory repaired those entries without changing any previously locked dependency version. A real clean install with npm11.21.0 and a local npm11.6.2 install-plan check both passed.
 
 Next's detached TypeScript child process produced empty output inside the restricted process sandbox; the production build passed with normal local process permission. Foundry's global signature-cache write warning did not affect successful test/format exit codes. Coverage has a supplementary Solar/source-anchor tooling issue documented in `contracts/VALIDATION.md`.
 
