@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-03",
+  "command": "forge test --json",
+  "suites": {
+    "test/CovaVault.t.sol:CovaVaultTest": {
+      "Success": 48
+    },
+    "test/CovaVaultFork.t.sol:CovaVaultForkTest": {
+      "Skipped": 2
+    },
+    "test/CovaVaultInvariant.t.sol:CovaVaultInvariantTest": {
+      "Success": 3
+    },
+    "test/CovaVaultSecurity.t.sol:CovaVaultTokenSecurityTest": {
+      "Success": 11
+    }
+  },
+  "total": {
+    "passed": 62,
+    "failed": 0,
+    "skipped": 2
+  },
+  "officialUsdGFork": {
+    "command": "ARB_SEPOLIA_RPC_URL=https://sepolia-rollup.arbitrum.io/rpc forge test --match-contract CovaVaultForkTest -vv",
+    "chainId": 421614,
+    "blockNumber": 315371623,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "publicTransactionsBroadcast": 0
+  }
+}
