@@ -1,0 +1,62 @@
+name: Cova validation
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cova-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1
+        with:
+          version: v1.5.1
+      - name: Install dependencies
+        run: npm ci
+      - name: Check TypeScript, lint and domain tests
+        run: |
+          npm run typecheck
+          npm run lint
+          npm test
+      - name: Check contracts and formatting
+        run: |
+          forge test --root contracts
+          forge fmt --root contracts --check
+      - name: Build production frontend
+        run: npm run build
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+      - name: Validate local settlement and browser flows
+        run: |
+          anvil --host 127.0.0.1 --port 8545 --chain-id 31337 --silent > "$RUNNER_TEMP/cova-anvil.log" 2>&1 &
+          node --input-type=module - <<'JS'
+          let ready = false;
+          for (let attempt = 0; attempt < 30; attempt++) {
+            try {
+              const response = await fetch('http://127.0.0.1:8545', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({jsonrpc: '2.0', id: 1, method: 'eth_chainId', params: []})
+              });
+              if ((await response.json()).result === '0x7a69') { ready = true; break; }
+            } catch {}
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+          if (!ready) throw new Error('Anvil failed to start on chain 31337.');
+          JS
+          npm run local:deploy
+          npm run test:integration
+          npm run test:e2e
