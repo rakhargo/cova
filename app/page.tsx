@@ -1,13 +1,5 @@
-import Image from 'next/image';
+import { CovaLogo } from '@/components/cova-logo';
 import { CovaPlayground } from '@/components/cova-playground';
-
-function CovaLogo() {
-  return (
-    <a className="brand" href="#" aria-label="Cova home">
-      <Image src="/cova-logo.png" alt="Cova" width={144} height={144} priority />
-    </a>
-  );
-}
 
 export default function Home() {
   return <>

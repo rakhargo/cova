@@ -1,0 +1,21 @@
+import {test,expect}from'@playwright/test';
+import {existsSync,readFileSync}from'node:fs';
+import type {Address}from'viem';
+import {injectedWallet}from'./wallet';
+const info=existsSync('local-deployment.json')?JSON.parse(readFileSync('local-deployment.json','utf8')) as {customer:Address;merchant:Address;legacyVault?:Address}:undefined;
+test.skip(!info?.legacyVault,'Requires actual legacy Anvil fixture.');
+test('legacy vault retains real direct flow and never offers unsupported signed actions',async({page})=>{
+ await injectedWallet(page,info!);await page.goto((process.env.COVA_E2E_LEGACY_URL || 'http://127.0.0.1:3103')+'/#playground');
+ await page.getByRole('button',{name:'Connect wallet',exact:true}).click();await page.getByRole('button',{name:'Switch network',exact:true}).click();
+ await expect(page.locator('.balance-metric').first().locator('strong')).toHaveText(/^[\d,.]+USDG$/);
+ await page.getByText('Customer-signed authorization',{exact:true}).click();
+ await expect(page.getByText('This vault uses direct authorizations.',{exact:false})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Sign authorization',exact:true})).toHaveCount(0);
+ await page.getByRole('button',{name:'Approve 100 USDG',exact:true}).click();await expect(page.getByRole('button',{name:'Deposit USDG',exact:true})).toBeEnabled();
+ await page.getByRole('button',{name:'Deposit USDG',exact:true}).click();await expect(page.getByRole('button',{name:'Authorize hold',exact:true})).toBeEnabled();
+ await page.getByRole('button',{name:'Authorize hold',exact:true}).click();await expect(page.locator('.active-hold')).toBeVisible();
+ await page.getByRole('button',{name:'Merchant',exact:true}).click();await page.evaluate(()=>{(window as unknown as {covaSetWallet:(s:string)=>void}).covaSetWallet('merchant');});
+ await expect(page.getByRole('button',{name:'Capture 14 USDG',exact:true})).toBeEnabled();await page.getByRole('button',{name:'Capture 14 USDG',exact:true}).click();
+ await expect(page.locator('.active-hold .remaining-amount')).toContainText('6');await page.getByRole('button',{name:'Release remaining',exact:true}).click();await expect(page.locator('.settled-hold')).toContainText('14 USDG paid to the merchant. 6 USDG back to the customer.');
+ await expect(page.getByRole('button',{name:'Submit authorization',exact:true})).toHaveCount(0);
+});

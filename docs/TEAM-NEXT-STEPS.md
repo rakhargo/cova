@@ -1,19 +1,21 @@
 # Cova — team handoff and next steps
 
-Updated 2026-10-03. **Arya's first assigned task is frontend redesign only. Other remaining work has no assigned owner yet.**
+Updated 2026-10-04. Arya completed the frontend redesign in [PR #1](https://github.com/rakhargo/cova/pull/1), now merged. His original frontend-only scope is preserved below for reference. Other remaining work has no assigned human owner yet.
 
 ## Current state
 
 - Public repository: https://github.com/rakhargo/cova
-- Arbitrum Sepolia vault: `0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428`
+- Arbitrum Sepolia vault (v1): `0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428`
 - Official USDG: `0xFFC95faa3d63Cde504a05B567C600B78C0b41892`, six decimals
 - Deployment is confirmed and matches the compiled contract. Sourcify and Blockscout source verification passed; see `deployments/arbitrum-sepolia.json`.
 - Available/reserved accounting, deposit/withdraw, partial/full/multiple captures, release and expiry are implemented.
-- 62 Foundry tests, two official USDG fork tests, eight domain/transaction tests and six browser tests passed. GitHub CI covers the local two-wallet flow.
+- Source includes vault v2 signed authorizations, the TypeScript SDK and shared onchain receipt history. The redesigned UI preserves these controls and gates unsupported signed actions on v1.
+- Integration validation passed: 97 Foundry tests, 32 JavaScript tests, nine browser tests, TypeScript, lint, production build and direct/signed Anvil settlement. Three official USDG fork tests passed during the preceding v2 validation; they are opt-in and skipped by network-free CI. See `docs/OPTIONAL-VALIDATION.md`.
 - Production frontend builds and reads the deployed vault. Its read-only production check showed zero USDG/available funds for the deployer; no public payment lifecycle was signed during that check.
 - The full signed, funded customer/merchant flow on Arbitrum Sepolia remains pending. Frontend hosting at a shared URL is also pending.
+- Public v2 deployment is deferred by the user. Deploy with a fresh funded wallet, update the vault/deployment-block configuration, then test the public flow before claiming a live signed demo.
 
-## Assigned task: Arya — frontend redesign
+## Completed first task: Arya frontend redesign
 
 Scope: visual design, layout, hierarchy, responsive behavior and clarity of the existing payment flow. Use the supplied `Cova logo.png` as a brand reference. Keep the product an infrastructure playground with the three existing presets.
 
@@ -102,3 +104,7 @@ To run the local Anvil UI interactively, load the generated `.env.anvil` before 
 ## Ready-to-use redesign prompt
 
 > Redesign the existing Cova frontend in this repository. Your first task is frontend redesign only. Read AGENTS.md, PRD.md, README.md, docs/DESIGN.md, docs/TEAM-NEXT-STEPS.md, and the relevant Next.js guides in node_modules/next/dist/docs before editing. Improve visual hierarchy, spacing, typography, mobile usability and clarity of the reserve/capture/release lifecycle. Use Cova's supplied logo/brand reference. Preserve all existing wallet, chain, approval, deposit, authorization, partial capture, release, expiry, transaction and settlement behavior. Keep real and simulated modes explicit. Do not alter contracts, accounting, permissions, deployed addresses or wallet transaction logic. Validate typecheck, lint, unit tests, production build and the existing Anvil/browser flow. Commit UI work in focused parts and prepare a PR with screenshots and validation evidence. Other features are outside this first task.
+
+## Optional capability implementation follow-up
+
+On 2026-10-04 the user authorized EIP-712, SDK and shared receipt implementation while deferring deployment. The source combines these capabilities with Arya's redesign; see `docs/OPTIONAL-VALIDATION.md`. The public vault is still v1. No additional human task was assigned.

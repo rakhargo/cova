@@ -1,4 +1,5 @@
 import { erc20Abi, getAddress, type PublicClient, type Address, type Hash } from 'viem';
+import { createCovaClient } from '../sdk/dist/index.js';
 import { vaultAbi } from './abi';
 import type { CovaConfig } from './config';
 import type { Hold, HoldStatus } from './types';
@@ -16,7 +17,8 @@ export async function verifyDeployment(client:PublicClient,config:CovaConfig) {
   ]);
   if(getAddress(token)!==getAddress(config.token)) throw new Error('CovaVault uses a different token. Check the deployment configuration.');
   if((symbol!=='USDG' && !(config.local && symbol==='MockUSDG')) || decimals<0 || decimals>36) throw new Error('Configured settlement asset has invalid USDG metadata.');
-  return {decimals};
+  const protocolVersion=await createCovaClient({publicClient:client,vault:config.vault,chainId:config.chainId,token:config.token}).protocolVersion();
+  return {decimals,protocolVersion};
 }
 async function readIds(client:PublicClient,config:CovaConfig,owner:Address,role:'customer'|'merchant',blockNumber:bigint) {
   const ids:Hash[]=[];
@@ -39,8 +41,8 @@ export async function readSnapshot(client:PublicClient,config:CovaConfig,owner:A
   const holdList:Hold[]=await Promise.all(unique.map(async id=>{
     const hold=await client.readContract({address:config.vault!,abi:vaultAbi,functionName:'holds',args:[id],blockNumber});
     const customerAvailable=hold[0].toLowerCase()===owner.toLowerCase()?available:await client.readContract({address:config.vault!,abi:vaultAbi,functionName:'availableBalance',args:[hold[0]],blockNumber});
-    return {id,customer:hold[0],merchant:hold[1],authorizedAmount:hold[2],capturedAmount:hold[3],expiresAt:Number(hold[4]),status:hold[5] as HoldStatus,referenceId:hold[6],description:'Payment authorization',customerAvailable};
+    return {id,customer:hold[0],merchant:hold[1],authorizedAmount:hold[2],capturedAmount:hold[3],expiresAt:Number(hold[4]),expiresAtRaw:hold[4],status:hold[5] as HoldStatus,referenceId:hold[6],description:'Payment authorization',customerAvailable};
   }));
   const byId=new Map(holdList.map(h=>[h.id,h]));
-  return {available,reserved,walletBalance,allowance,blockTimestamp:Number(block.timestamp),fetchedAt:Math.floor(Date.now()/1000),customerHolds:customerIds.toReversed().map(id=>byId.get(id)!),merchantHolds:merchantIds.toReversed().map(id=>byId.get(id)!)};
+  return {available,reserved,walletBalance,allowance,blockNumber,blockTimestamp:Number(block.timestamp),fetchedAt:Math.floor(Date.now()/1000),customerHolds:customerIds.toReversed().map(id=>byId.get(id)!),merchantHolds:merchantIds.toReversed().map(id=>byId.get(id)!)};
 }

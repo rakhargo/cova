@@ -1,4 +1,5 @@
 'use client';
+import { CustomerSignature, MerchantSignature } from './signed-authorizations';
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { isAddress } from 'viem';
@@ -23,7 +24,7 @@ function AmountInput({ id, value, onChange, label, disabled = false }: { id: str
 function TransactionNotice({ cova }: { cova: CovaController }) {
   const tx = cova.transaction;
   const link = tx.hash && cova.explorerTx(tx.hash);
-  const title = tx.status === 'awaiting-wallet' ? 'Confirm in your wallet' : tx.status === 'submitted' ? 'Submitted' : tx.status === 'pending' ? 'Confirming' : tx.status === 'confirmed' ? 'Confirmed' : tx.status === 'failed' ? 'Failed' : '';
+  const title = tx.status === 'awaiting-wallet' ? 'Confirm in your wallet' : tx.status === 'submitted' ? 'Submitted' : tx.status === 'pending' ? 'Confirming' : tx.status === 'confirmed' ? (cova.demo ? 'Demo action complete' : tx.kind === 'signature' ? 'Authorization signed' : 'Confirmed') : tx.status === 'failed' ? 'Failed' : '';
   return <div className="transaction-region" aria-live="polite" aria-atomic="true">{tx.status !== 'idle' && <div className={`transaction-notice ${tx.status}`}>
     {tx.status === 'confirmed' ? <CheckCircle2 size={18}/> : tx.status === 'failed' ? <CircleAlert size={18}/> : <LoaderCircle size={18} className="spinning"/>}
     <div><strong>{title}</strong>{(tx.error || tx.label) && <p>{tx.error || tx.label}</p>}{tx.hash && <span className="transaction-hash" title={tx.hash}>{shortAddress(tx.hash)}</span>}</div>
@@ -185,6 +186,7 @@ export function CovaPlayground() {
                   <button className="button button-primary authorize-button" type="submit" disabled={!canAct || !validHold || !validMerchant || !validExpiry || holdValue > cova.available}>Authorize hold</button>
                 </div>
               </form>
+              <CustomerSignature cova={cova} input={{merchant:chosenMerchant,amount,expiryMinutes,description:reference.trim() || scenario.title}} canAct={canAct} canSign={canAct && validHold && validMerchant && validExpiry && holdValue<=cova.available} execute={execute}/>
             </div>
           </div>
         </> : <>
@@ -196,7 +198,10 @@ export function CovaPlayground() {
           {!cova.demo && cova.connected && <div className="merchant-wallet-line"><span title={cova.address}>{shortAddress(cova.address ?? '')}</span><strong>{usd(cova.walletBalance)} USDG</strong></div>}
         </>}
 
+        {mode==='merchant' && <MerchantSignature cova={cova} canAct={canAct} execute={execute}/>}
         <div className="hold-list-section">
+          {!cova.demo && cova.receiptHistoryLoading && <p className="field-help" aria-live="polite">Syncing verified receipt history from the chain…</p>}
+          {!cova.demo && cova.receiptHistoryError && <p className="field-error" role="status">{cova.receiptHistoryError} Refresh to retry.</p>}
           <div className="hold-list-heading">
             <h3>{mode === 'customer' ? 'Your holds' : 'Assigned holds'}</h3>
             <span>{holds.length}</span>

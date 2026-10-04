@@ -143,7 +143,7 @@ contract CovaVaultTokenSecurityTest is Test {
     }
 
     function _assertAllCallbacksBlocked(bool inbound) internal {
-        bytes[] memory calls = new bytes[](6);
+        bytes[] memory calls = new bytes[](8);
         calls[0] = abi.encodeCall(CovaVault.deposit, (uint256(1)));
         calls[1] = abi.encodeCall(CovaVault.withdraw, (uint256(1)));
         calls[2] = abi.encodeCall(
@@ -152,6 +152,16 @@ contract CovaVaultTokenSecurityTest is Test {
         calls[3] = abi.encodeCall(CovaVault.capture, (bytes32(0), uint256(1)));
         calls[4] = abi.encodeCall(CovaVault.release, (bytes32(0)));
         calls[5] = abi.encodeCall(CovaVault.releaseExpired, (bytes32(0)));
+        CovaVault.HoldAuthorization memory authorization = CovaVault.HoldAuthorization({
+            customer: customer,
+            merchant: merchant,
+            maxAmount: 1,
+            expiresAt: uint64(block.timestamp + 1),
+            nonce: 0,
+            referenceId: bytes32(0)
+        });
+        calls[6] = abi.encodeCall(CovaVault.authorizeHold, (authorization, bytes("")));
+        calls[7] = abi.encodeCall(CovaVault.invalidateAuthorizations, (uint256(1)));
         if (!inbound) _deposit();
         for (uint256 i; i < calls.length; ++i) {
             token.configureCallback(address(vault), calls[i], !inbound, inbound, false);
@@ -164,7 +174,7 @@ contract CovaVaultTokenSecurityTest is Test {
                 abi.encodeWithSelector(ReentrancyGuard.ReentrancyGuardReentrantCall.selector)
             );
         }
-        assertEq(vault.totalLiability(), inbound ? 6e6 : 94e6);
+        assertEq(vault.totalLiability(), inbound ? 8e6 : 92e6);
         assertEq(token.balanceOf(address(vault)), vault.totalLiability());
     }
 

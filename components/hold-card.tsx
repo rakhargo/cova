@@ -1,5 +1,6 @@
 'use client';
 
+import { formatHoldExpiry } from '@/lib/expiry';
 import { useState, type FormEvent } from 'react';
 import { CheckCircle2, ChevronDown, Clock3, ExternalLink, LockKeyhole } from 'lucide-react';
 import { formatAmount, releasedAmount, remainingAmount, shortAddress } from '@/lib/format';
@@ -10,6 +11,7 @@ import { parseUiAmount } from './amount';
 function expiryText(expiresAt: number, now: number) {
   if (!now) return 'Checking expiry…';
   const seconds = expiresAt - now;
+  if(seconds>3155760000) return 'Long-term hold';
   if (seconds <= 0) return 'Expired';
   if (seconds < 60) return `${seconds}s remaining`;
   if (seconds < 3600) return `${Math.ceil(seconds / 60)} min remaining`;
@@ -28,6 +30,7 @@ function suggestedAmount(hold: Hold, decimals: number) {
 
 export function HoldCard({ hold, cova, mode, now, canAct, execute }: { hold: Hold; cova: CovaController; mode: Mode; now: number; canAct: boolean; execute: (action: () => Promise<void>) => Promise<void> }) {
   const [captureAmount, setCaptureAmount] = useState(() => suggestedAmount(hold, cova.decimals));
+  const expiryDate=formatHoldExpiry(hold.expiresAt,hold.expiresAtRaw);
   const remaining = remainingAmount(hold);
   const released = releasedAmount(hold);
   const active = hold.status === 1;
@@ -52,7 +55,7 @@ export function HoldCard({ hold, cova, mode, now, canAct, execute }: { hold: Hol
   }
 
   return <article className={`hold-card ${active ? 'active-hold' : 'settled-hold'}`} aria-labelledby={`hold-${hold.id}`}>
-    <div className="hold-card-heading"><div className="hold-title"><span className={`hold-title-icon ${!active ? 'settled' : ''}`}>{active ? <LockKeyhole size={18}/> : <CheckCircle2 size={18}/>}</span><div><h4 id={`hold-${hold.id}`}>{hold.description || 'Payment authorization'}</h4><span className="hold-id" title={hold.id}>Hold {shortAddress(hold.id)}</span></div></div><div className="hold-status-group">{active && <time dateTime={new Date(hold.expiresAt * 1000).toISOString()} title={new Date(hold.expiresAt * 1000).toLocaleString()} className={`hold-expiry ${expired ? 'expired' : ''}`}><Clock3 size={13}/>{expiryText(hold.expiresAt, now)}</time>}<span className={`status-badge ${active ? expired ? 'expired' : 'active' : 'settled'}`}>{active ? expired ? 'Expired' : 'Reserved' : hold.status === 2 ? 'Fully captured' : 'Settled'}</span></div></div>
+    <div className="hold-card-heading"><div className="hold-title"><span className={`hold-title-icon ${!active ? 'settled' : ''}`}>{active ? <LockKeyhole size={18}/> : <CheckCircle2 size={18}/>}</span><div><h4 id={`hold-${hold.id}`}>{hold.description || 'Payment authorization'}</h4><span className="hold-id" title={hold.id}>Hold {shortAddress(hold.id)}</span></div></div><div className="hold-status-group">{active && <time dateTime={expiryDate.iso} title={expiryDate.label} className={`hold-expiry ${expired ? 'expired' : ''}`}><Clock3 size={13}/>{expiryText(hold.expiresAt, now)}</time>}<span className={`status-badge ${active ? expired ? 'expired' : 'active' : 'settled'}`}>{active ? expired ? 'Expired' : 'Reserved' : hold.status === 2 ? 'Fully captured' : 'Settled'}</span></div></div>
     {active ? <>
       <div className="hold-amounts"><div><span>Authorized</span><strong>{money(hold.authorizedAmount)}<small>USDG</small></strong></div><div><span>Captured</span><strong>{money(hold.capturedAmount)}<small>USDG</small></strong></div><div className="remaining-amount"><span><i className="swatch swatch-reserved" aria-hidden="true"/>Still reserved</span><strong>{money(remaining)}<small>USDG</small></strong></div></div>
       <div className="hold-progress" role="img" aria-label={`${money(hold.capturedAmount)} of ${money(hold.authorizedAmount)} USDG captured, ${money(remaining)} remaining`}><span style={{ width: `${progress}%` }}/><i/></div>
@@ -68,6 +71,6 @@ export function HoldCard({ hold, cova, mode, now, canAct, execute }: { hold: Hol
       <div className="settlement-outcome"><p>{money(hold.capturedAmount)} USDG paid to the merchant. {money(released)} USDG back to the customer.</p></div>
       <div className="settlement-balances"><div><span>Customer available</span><strong>{customerAvailable !== undefined ? `${money(customerAvailable)} USDG` : 'See customer view'}</strong></div><div><span>Merchant received</span><strong>{money(hold.capturedAmount)} USDG</strong></div></div>
     </>}
-    <details className="hold-details"><summary>Details <ChevronDown size={14}/></summary><dl><div><dt>Hold ID</dt><dd>{hold.id}</dd></div><div><dt>Customer</dt><dd>{hold.customer}</dd></div><div><dt>Merchant</dt><dd>{hold.merchant}</dd></div><div><dt>Expires</dt><dd>{new Date(hold.expiresAt * 1000).toLocaleString()}</dd></div><div><dt>Reference</dt><dd>{hold.referenceId}</dd></div></dl>{links.length > 0 && <div className="receipt-links">{links.map(receipt => <a key={receipt.hash} href={receipt.url} target="_blank" rel="noreferrer">{receipt.label} <ExternalLink size={12}/></a>)}</div>}{cova.demo && <p className="demo-detail-note">Playground holds have no explorer receipts.</p>}</details>
+    <details className="hold-details"><summary>Details <ChevronDown size={14}/></summary><dl><div><dt>Hold ID</dt><dd>{hold.id}</dd></div><div><dt>Customer</dt><dd>{hold.customer}</dd></div><div><dt>Merchant</dt><dd>{hold.merchant}</dd></div><div><dt>Expires</dt><dd>{expiryDate.label}</dd></div><div><dt>Reference</dt><dd>{hold.referenceId}</dd></div></dl>{links.length > 0 && <div className="receipt-links">{links.map(receipt => <a key={receipt.hash} href={receipt.url} target="_blank" rel="noreferrer">{receipt.label} <ExternalLink size={12}/></a>)}</div>}{cova.local && !cova.demo && receipts.length > 0 && <div className="receipt-links">{receipts.map(receipt => <span key={receipt.hash} title={receipt.hash}>{receipt.label}: {shortAddress(receipt.hash)}</span>)}</div>}{cova.demo && <p className="demo-detail-note">Simulated hold. No onchain transaction receipts.</p>}</details>
   </article>;
 }

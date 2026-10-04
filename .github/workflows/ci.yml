@@ -59,4 +59,5 @@ jobs:
           JS
           npm run local:deploy
           npm run test:integration
+          npm run test:sdk:integration
           npm run test:e2e

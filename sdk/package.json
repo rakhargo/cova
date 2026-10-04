@@ -1,0 +1,14 @@
+{
+  "name": "@cova/sdk",
+  "version": "0.2.0",
+  "description": "Typed clients, EIP-712 authorizations and shared receipts for CovaVault",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {".": {"types": "./dist/index.d.ts", "import": "./dist/index.js"}},
+  "files": ["dist", "README.md"],
+  "sideEffects": false,
+  "scripts": {"build": "tsc -p tsconfig.json", "prepack": "npm run build"},
+  "peerDependencies": {"viem": ">=2.38.0 <3"},
+  "license": "MIT"
+}
