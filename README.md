@@ -61,7 +61,7 @@ flowchart LR
   V -->|Available balance withdrawal| C
 ```
 
-No backend, database, admin, upgradeability or project token. Wallet authorization is enforced by the contract. The frontend discovers hold IDs through paginated contract getters and reads money/status directly from state, at a consistent block. Local browser storage stores optional descriptions and receipt links; it never supplies balances or hold status. Descriptions are hashed into the onchain reference; other browsers see the reference ID and generic title.
+No backend, database, admin, upgradeability or project token. Current source adds EIP-712 authorizations and a reusable SDK; the existing public deployment remains v1 until the separately planned v2 deployment. Wallet authorization is enforced by the contract. The frontend discovers hold IDs through paginated contract getters and reads money/status directly from state, at a consistent block. Local browser storage stores optional descriptions and receipt links; it never supplies balances or hold status. Descriptions are hashed into the onchain reference; other browsers see the reference ID and generic title.
 
 ## Contracts
 
@@ -225,9 +225,9 @@ Demo Mode follows the same accounting with labelled simulated roles. A single re
 
 - The public vault is deployed and verified; the funded two-wallet Arbitrum payment lifecycle remains to be recorded.
 - Frontend hosting at a shared public URL remains to be set up; local development/production previews are available.
-- Holds use normal customer transactions. EIP-712 signatures and relayers are deferred.
+- The current public v1 vault uses normal customer transactions. Version2 signed authorizations are implemented/tested but their public deployment is deferred.
 - Expiry cleanup requires a transaction; no scheduler runs automatically.
-- Human-readable references and action receipt links are browser-local. Hold discovery, amounts, expiry and status remain onchain and recover across browsers.
+- Action receipt links now recover from onchain events across browsers. Human-readable custom references remain browser-local or are shared explicitly in a signed envelope. Amounts, expiry and status remain contract state.
 - All pages of an account's hold history are read directly; a high-volume production integration should add indexing and UI pagination.
 - Dependency audit findings are recorded in `docs/VALIDATION.md`; review them before production use.
 
@@ -240,3 +240,13 @@ Demo Mode follows the same accounting with labelled simulated roles. A single re
 Arya's assigned first task is frontend redesign only; ownership of other remaining work is undecided. See `docs/TEAM-NEXT-STEPS.md` for acceptance checks and his ready-to-use brief. Dependency advisories and a security audit must be addressed before production use.
 
 Later: relayers, merchant APIs, embedded checkout, account abstraction, multiple settlement assets, merchant analytics and carefully scoped dispute extensions.
+
+## Signed Authorizations and SDK
+
+The current source is CovaVault v2 with EIP-712, replay protection and nonce invalidation. Customers sign a maximum offchain; merchant/relayer submission creates the actual reservation. Cancelling pending signatures never releases an active hold. SDK consumers can use any actual relayer, while the merchant UI enforces its assigned wallet. EOAs and deployed ERC1271 validators are supported; counterfactual ERC6492 is outside this version.
+
+Build/pack the standalone SDK with `npm run build:sdk` and `npm pack ./sdk`; no npm publication is claimed. Read sdk/README.md for typed clients, portable JSON and bounded receipt history. `npm run test:sdk:integration` exercises actual signatures and settlements on Anvil.
+
+Set `NEXT_PUBLIC_COVA_DEPLOYMENT_BLOCK` to the actual vault creation block for shared receipt scans. The known v1 deployment block315383406 is recognized automatically; local deploy writes its actual block. Scan errors remain visible and never supply accounting.
+
+Public vault0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428 is immutable v1 and does not support EIP-712. A new v2 deployment is required; the user explicitly deferred that deployment. Direct v1 holds and history remain usable. See docs/OPTIONAL-FEATURES.md and docs/OPTIONAL-VALIDATION.md for the exact implementation and test evidence.

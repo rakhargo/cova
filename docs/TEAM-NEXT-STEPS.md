@@ -102,3 +102,7 @@ To run the local Anvil UI interactively, load the generated `.env.anvil` before 
 ## Ready-to-use redesign prompt
 
 > Redesign the existing Cova frontend in this repository. Your first task is frontend redesign only. Read AGENTS.md, PRD.md, README.md, docs/DESIGN.md, docs/TEAM-NEXT-STEPS.md, and the relevant Next.js guides in node_modules/next/dist/docs before editing. Improve visual hierarchy, spacing, typography, mobile usability and clarity of the reserve/capture/release lifecycle. Use Cova's supplied logo/brand reference. Preserve all existing wallet, chain, approval, deposit, authorization, partial capture, release, expiry, transaction and settlement behavior. Keep real and simulated modes explicit. Do not alter contracts, accounting, permissions, deployed addresses or wallet transaction logic. Validate typecheck, lint, unit tests, production build and the existing Anvil/browser flow. Commit UI work in focused parts and prepare a PR with screenshots and validation evidence. Other features are outside this first task.
+
+## Optional capability implementation follow-up
+
+On2026-10-04 the user authorized EIP-712, SDK and shared receipt implementation, while deferring deployment. These are implemented and tested in the feature branch; see docs/OPTIONAL-VALIDATION.md. The public vault is still v1. Arya remains assigned to frontend redesign; integrate/preserve the signed panel and shared receipt behavior when the feature PR lands. No additional human task was silently assigned.
