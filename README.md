@@ -169,13 +169,13 @@ Fork tests are opt-in: the default suite requires no network. The fork funds a t
 
 ## Deployment
 
-**CovaVault is deployed on Arbitrum Sepolia:** `0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428`.
+**CovaVault v2 is deployed on Arbitrum Sepolia:** `0xC5E8bd21b3691815e9F0CD7e4F80C656A56C1eD5`.
 
-- [Deployment transaction](https://sepolia.arbiscan.io/tx/0x930e603ac6bdd58ae0e699365a421eecfd47f2545c0d056de69c0f8c78cb17cb), confirmed at block 315383406.
-- [Sourcify source verification](https://repo.sourcify.dev/421614/0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428): creation and runtime both exact matches.
-- [Blockscout verified source](https://arbitrum-sepolia.blockscout.com/address/0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428?tab=contract).
+- [Deployment transaction](https://sepolia.arbiscan.io/tx/0x3043d8144f3b41c5524eb8e4f25567d09e9c37f4f44aca1d2601929e3123c25b), confirmed at block 315667402.
+- [Arbiscan verified source](https://sepolia.arbiscan.io/address/0xC5E8bd21b3691815e9F0CD7e4F80C656A56C1eD5#code).
+- The earlier immutable v1 vault remains at `0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428`; its original evidence is preserved in `deployments/arbitrum-sepolia-v1.json`.
 
-Public evidence and compiler/source binding are in `deployments/arbitrum-sepolia.json`. The frontend's ignored local configuration and `.env.example` use this vault. Production build and a live read check passed. Signed customer/merchant payments on the public network still need faucet USDG and two real wallet accounts. Arbiscan source verification remains pending because Sourcify's automatic forwarding reached its daily submission limit.
+Public evidence and compiler/source binding are in `deployments/arbitrum-sepolia.json`. The frontend's ignored local configuration and `.env.example` use v2. Creation bytecode, runtime outside immutable slots, USDG identity, EIP-712 domain and the authorization digest were checked against the deployed contract. Funded customer/merchant payments on the public network still need official USDG and two wallet accounts; deployment/read checks do not prove that flow.
 
 Use the existing vault for development and the demo. Only run the following when intentionally deploying a new instance: create an ignored `.env` with the deployer key, RPC and official USDG address, and fund the deployer with Arbitrum Sepolia ETH. From the repository root:
 
@@ -186,6 +186,16 @@ set +a
 forge script contracts/script/Deploy.s.sol:Deploy --root contracts \
   --rpc-url "$ARB_SEPOLIA_RPC_URL" --broadcast
 ```
+
+If your key is already exported as `DEV_PRIVATE_KEY`, map it to the variable the script reads. The key stays in the process environment rather than a `--private-key` argument:
+
+```bash
+DEPLOYER_PRIVATE_KEY="0x${DEV_PRIVATE_KEY#0x}" \
+  forge script contracts/script/Deploy.s.sol:Deploy --root contracts \
+  --rpc-url arbitrum_sepolia --broadcast
+```
+
+Use Bash `$DEV_PRIVATE_KEY`, not `&DEV_PRIVATE_KEY`. Keep shell tracing (`set -x`) disabled when working with secrets.
 
 The deployment script checks chain 421614, official USDG address, deployed token code, symbol and six decimals. It never uses a substitute token on Arbitrum. Read the deployed vault address from Foundry's actual broadcast output, put it in `NEXT_PUBLIC_COVA_VAULT_ADDRESS` in `.env.local`, then restart/rebuild Next.js. Confirm `cast call <vault> 'token()(address)' --rpc-url "$ARB_SEPOLIA_RPC_URL"` matches the official address. Receipts link to `https://sepolia.arbiscan.io/tx/<hash>`.
 
@@ -225,7 +235,7 @@ Demo Mode follows the same accounting with labelled simulated roles. A single re
 
 - The public vault is deployed and verified; the funded two-wallet Arbitrum payment lifecycle remains to be recorded.
 - Frontend hosting at a shared public URL remains to be set up; local development/production previews are available.
-- The current public v1 vault uses normal customer transactions. Version2 signed authorizations are implemented/tested but their public deployment is deferred.
+- The current public v2 vault supports both direct customer transactions and EIP-712 signed authorizations. A funded public two-wallet payment flow is still pending.
 - Expiry cleanup requires a transaction; no scheduler runs automatically.
 - Action receipt links now recover from onchain events across browsers. Human-readable custom references remain browser-local or are shared explicitly in a signed envelope. Amounts, expiry and status remain contract state.
 - All pages of an account's hold history are read directly; a high-volume production integration should add indexing and UI pagination.
@@ -233,9 +243,9 @@ Demo Mode follows the same accounting with labelled simulated roles. A single re
 
 ## Future Roadmap
 
-1. Deploy vault v2 with a fresh funded testnet wallet and update frontend configuration.
-2. Fund separate customer/merchant wallets, verify the full public-network USDG flow and record the demo.
-3. Host the integrated frontend at a shared demo URL.
+1. Fund separate customer/merchant wallets and verify the full public-network USDG flow.
+2. Host the integrated frontend at a shared demo URL.
+3. Record the verified two-wallet demo and publish integration examples.
 
 Arya completed the frontend redesign; the source also includes signed authorizations, a merchant SDK and shared receipts. Ownership of remaining work is undecided. See `docs/TEAM-NEXT-STEPS.md` for current status and the original redesign brief. Dependency advisories and a security audit must be addressed before production use.
 
@@ -249,4 +259,4 @@ Build/pack the standalone SDK with `npm run build:sdk` and `npm pack ./sdk`; no 
 
 Set `NEXT_PUBLIC_COVA_DEPLOYMENT_BLOCK` to the actual vault creation block for shared receipt scans. The known v1 deployment block315383406 is recognized automatically; local deploy writes its actual block. Scan errors remain visible and never supply accounting.
 
-Public vault0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428 is immutable v1 and does not support EIP-712. A new v2 deployment is required; the user explicitly deferred that deployment. Direct v1 holds and history remain usable. See docs/OPTIONAL-FEATURES.md and docs/OPTIONAL-VALIDATION.md for the exact implementation and test evidence.
+Public v2 vault `0xC5E8bd21b3691815e9F0CD7e4F80C656A56C1eD5` supports EIP-712. The previous v1 vault is immutable and still supports its direct holds/history; existing funds are not automatically migrated. See `docs/OPTIONAL-FEATURES.md` and `docs/OPTIONAL-VALIDATION.md` for implementation and validation evidence.

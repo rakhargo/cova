@@ -17,9 +17,9 @@
 - Actual localhost SDK integration uses different customer/merchant/relayer accounts and verifies SDK/onchain digest equality, sign-without-reservation, multiple capture 10+4, release 6, cancellation/replay rejection and fresh receipt recovery.
 
 ## Public deployment distinction
-The existing public deployment remains v1 at 0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428. Its confirmed deployment/source evidence remains in deployments/arbitrum-sepolia.json, tied to the prior source commit.
-**No v2 public deployment was attempted:** the user selected implementation first, deployment later. The public environment is not changed to a fabricated v2 address. SDK/direct flow/shared receipts support v1, while signed actions require detected v2 and are unavailable on v1/simulation.
-The signed v2 flow is implemented and exercised on Anvil and an official USDG fork. A funded public two-wallet E2E remains pending and requires fresh customer/merchant wallets, USDG and ETH. A new immutable v2 deployment is required before offering signatures on Arbitrum Sepolia.
+V2 is deployed at `0xC5E8bd21b3691815e9F0CD7e4F80C656A56C1eD5`, creation block315667402. Transaction `0x3043d8144f3b41c5524eb8e4f25567d09e9c37f4f44aca1d2601929e3123c25b` is confirmed. Arbiscan returned `Pass - Verified`. Receipt, creation bytecode, runtime outside consistent immutable slots, USDG identity, v2/EIP-712 domain, viem/onchain authorization digest and zero initial liability were independently checked. Public evidence is in `deployments/arbitrum-sepolia.json`, bound to source commit `7bbb751`.
+The prior immutable v1 deployment and its original source evidence remain in `deployments/arbitrum-sepolia-v1.json`; old funds/holds are not migrated. SDK/direct flow/shared receipts support v1, while signed actions require detected v2 and are unavailable in simulation.
+The signed v2 payment flow is exercised on Anvil and an official USDG fork. A funded public two-wallet E2E remains pending and requires separate customer/merchant wallets, USDG and ETH. The deployer had zero USDG during the v2 deployment, so no funded public payment lifecycle is claimed.
 
 ## Review fixes
 Independent review found and fixed wrong-chain SDK history scans, hidden overlap errors, orphan receipts after a lower head, signature leakage between wallet contexts, and valid uint64 expiries outside JavaScript Date range. Focused regressions cover these boundaries. SDK receipt handling rejects cancellation/changed replacement while accepting repricing.
@@ -43,4 +43,4 @@ npm pack ./sdk
 The local fixture includes a renamed baseline v1 vault solely for browser compatibility tests. MockUSDG and the unlocked test wallet provider are test-only infrastructure; the live app does not supply fake USDG or signatures.
 
 ## Known boundaries
-Custom plaintext references remain browser-local unless shared explicitly in the signed envelope; only reference hashes are onchain. Receipt scans are bounded and can report incomplete history rather than invent results. Deep reorganization/indexing at large scale remains future work. No hosted relayer/API, AA system, dispute mechanism or multi-token protocol was added. Npm publication and public deployment were not requested for this implementation pass.
+Custom plaintext references remain browser-local unless shared explicitly in the signed envelope; only reference hashes are onchain. Receipt scans are bounded and can report incomplete history rather than invent results. Deep reorganization/indexing at large scale remains future work. No hosted relayer/API, AA system, dispute mechanism or multi-token protocol was added. Npm publication and frontend hosting remain pending.

@@ -1,0 +1,53 @@
+{
+  "network": "Arbitrum Sepolia",
+  "chainId": 421614,
+  "vault": "0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428",
+  "token": "0xFFC95faa3d63Cde504a05B567C600B78C0b41892",
+  "deploymentTransaction": "0x930e603ac6bdd58ae0e699365a421eecfd47f2545c0d056de69c0f8c78cb17cb",
+  "blockNumber": 315383406,
+  "blockTimestamp": 1791044525,
+  "deployer": "0xadf00a2476c77163B607af6E55A6a90185ae33f6",
+  "gasUsed": "1283423",
+  "effectiveGasPriceWei": "50896001",
+  "gasCostETH": "0.000065321098291423",
+  "sourceCommit": "5342b4b972cf565cc95459189637fe6b025cbb89",
+  "compiler": "0.8.30+commit.73712a01",
+  "optimizer": {
+    "enabled": true,
+    "runs": 200
+  },
+  "evmVersion": "cancun",
+  "runtimeBytes": 5442,
+  "receiptConfirmed": true,
+  "runtimeMatchesCompiledArtifact": true,
+  "tokenMatchesOfficialUSDG": true,
+  "sourceVerification": {
+    "status": "verified",
+    "provider": "Sourcify",
+    "verificationId": "4c446c88-9f50-4775-bd19-8450761d5922",
+    "contractUrl": "https://repo.sourcify.dev/421614/0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428",
+    "runtimeMatch": "exact_match",
+    "creationMatch": "exact_match",
+    "verifiedAt": "2026-10-03T16:27:55Z",
+    "external": {
+      "blockscout": {
+        "status": "verified",
+        "result": "Pass - Verified",
+        "url": "https://arbitrum-sepolia.blockscout.com/address/0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428?tab=contract"
+      },
+      "etherscan": {
+        "status": "forwarding-failed",
+        "reason": "Sourcify automatic forwarding reached its daily source-submission limit."
+      }
+    }
+  },
+  "frontendValidation": {
+    "productionBuild": true,
+    "liveReadCheck": true,
+    "network": "Arbitrum Sepolia",
+    "checkedAddress": "0xadf00a2476c77163B607af6E55A6a90185ae33f6",
+    "walletProvider": "read-only test provider; actual injected wallet signing remains for funded live E2E",
+    "paymentLifecycleOnPublicNetwork": "not yet tested: USDG and separate merchant wallet required",
+    "browserBundleSecretCheckPassed": true
+  }
+}

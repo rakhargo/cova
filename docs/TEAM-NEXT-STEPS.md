@@ -5,15 +5,15 @@ Updated 2026-10-04. Arya completed the frontend redesign in [PR #1](https://gith
 ## Current state
 
 - Public repository: https://github.com/rakhargo/cova
-- Arbitrum Sepolia vault (v1): `0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428`
+- Arbitrum Sepolia vault (v2): `0xC5E8bd21b3691815e9F0CD7e4F80C656A56C1eD5`, creation block 315667402.
 - Official USDG: `0xFFC95faa3d63Cde504a05B567C600B78C0b41892`, six decimals
-- Deployment is confirmed and matches the compiled contract. Sourcify and Blockscout source verification passed; see `deployments/arbitrum-sepolia.json`.
+- Deployment is confirmed, bytecode/domain checks passed and Arbiscan source verification passed; see `deployments/arbitrum-sepolia.json`. Original v1 evidence is preserved in `deployments/arbitrum-sepolia-v1.json`.
 - Available/reserved accounting, deposit/withdraw, partial/full/multiple captures, release and expiry are implemented.
 - Source includes vault v2 signed authorizations, the TypeScript SDK and shared onchain receipt history. The redesigned UI preserves these controls and gates unsupported signed actions on v1.
 - Integration validation passed: 97 Foundry tests, 32 JavaScript tests, nine browser tests, TypeScript, lint, production build and direct/signed Anvil settlement. Three official USDG fork tests passed during the preceding v2 validation; they are opt-in and skipped by network-free CI. See `docs/OPTIONAL-VALIDATION.md`.
 - Production frontend builds and reads the deployed vault. Its read-only production check showed zero USDG/available funds for the deployer; no public payment lifecycle was signed during that check.
 - The full signed, funded customer/merchant flow on Arbitrum Sepolia remains pending. Frontend hosting at a shared URL is also pending.
-- Public v2 deployment is deferred by the user. Deploy with a fresh funded wallet, update the vault/deployment-block configuration, then test the public flow before claiming a live signed demo.
+- Public v2 deployment and vault/deployment-block configuration are complete. Test the funded public payment flow before claiming a live signed demo.
 
 ## Completed first task: Arya frontend redesign
 
@@ -54,7 +54,7 @@ Core protocol features are implemented. EIP-712/SDK/indexing are extensions; the
 
 ## Live E2E checklist
 
-Use fresh, separate customer and merchant test wallets; do not reuse or share the deployment key. Both need ETH on chain 421614. The customer needs official test USDG from the [Paxos test crypto guide](https://docs.paxos.com/guides/developer/fund-sandbox-with-test-crypto). Configure the merchant's public wallet address in the form or the optional `NEXT_PUBLIC_DEMO_MERCHANT_ADDRESS` default.
+Use separate customer and merchant test wallets and never share private keys. Both need ETH on chain 421614. The customer needs official test USDG from the [Paxos test crypto guide](https://docs.paxos.com/guides/developer/fund-sandbox-with-test-crypto). Configure the merchant's public wallet address in the form or the optional `NEXT_PUBLIC_DEMO_MERCHANT_ADDRESS` default.
 
 - [ ] Customer connects an injected wallet and switches to Arbitrum Sepolia.
 - [ ] Wallet reads actual USDG and Cova balances without an RPC/configuration error.
@@ -107,4 +107,4 @@ To run the local Anvil UI interactively, load the generated `.env.anvil` before 
 
 ## Optional capability implementation follow-up
 
-On 2026-10-04 the user authorized EIP-712, SDK and shared receipt implementation while deferring deployment. The source combines these capabilities with Arya's redesign; see `docs/OPTIONAL-VALIDATION.md`. The public vault is still v1. No additional human task was assigned.
+On 2026-10-04 the user authorized EIP-712, SDK and shared receipts, then authorized v2 deployment using the existing environment key. V2 is confirmed and verified; the source combines these capabilities with Arya's redesign. See `docs/OPTIONAL-VALIDATION.md`. Funded public payment E2E and hosting remain pending. No additional human task was assigned.
