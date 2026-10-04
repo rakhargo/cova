@@ -10,3 +10,6 @@ playwright-report/
 test-results/
 local-deployment.json
 .superpowers/
+
+sdk/dist/
+*.tgz

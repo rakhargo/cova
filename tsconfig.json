@@ -37,10 +37,13 @@
     ".next-demo/types/**/*.ts",
     ".next-demo/dev/types/**/*.ts",
     ".next-anvil/types/**/*.ts",
-    ".next-anvil/dev/types/**/*.ts"
+    ".next-anvil/dev/types/**/*.ts",
+    ".next-legacy/types/**/*.ts",
+    ".next-legacy/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "contracts/lib"
+    "contracts/lib",
+    "sdk/dist"
   ]
 }

@@ -1,20 +1,60 @@
 {
-  "name": "cova", "version": "0.1.0", "private": true, "type": "module",
+  "name": "cova",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev --hostname 0.0.0.0", "build": "next build --webpack", "start": "next start --hostname 0.0.0.0",
-    "typecheck": "tsc --noEmit", "lint": "eslint .", "test": "node --import tsx --test --test-isolation=none tests/*.test.ts",
-    "test:e2e": "playwright test", "test:contracts": "forge test --root contracts", "abi": "node scripts/generate-abi.mjs",
-    "local:deploy": "node --import tsx scripts/local-deploy.ts", "test:integration": "node --import tsx scripts/integration.ts"
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build --webpack",
+    "start": "next start --hostname 0.0.0.0",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "node --import tsx --test --test-isolation=none tests/*.test.ts",
+    "test:e2e": "playwright test",
+    "test:contracts": "forge test --root contracts",
+    "abi": "node scripts/generate-abi.mjs",
+    "local:deploy": "node --import tsx scripts/local-deploy.ts",
+    "test:integration": "node --import tsx scripts/integration.ts",
+    "build:sdk": "tsc -p sdk/tsconfig.json",
+    "test:sdk:integration": "node --import tsx scripts/sdk-integration.ts",
+    "prebuild": "npm run build:sdk",
+    "pretypecheck": "npm run build:sdk",
+    "predev": "npm run build:sdk",
+    "pretest": "npm run build:sdk",
+    "pretest:e2e": "npm run build:sdk"
   },
   "dependencies": {
-    "next": "^16.0.0", "react": "^19.2.0", "react-dom": "^19.2.0", "wagmi": "^2.19.0", "viem": "^2.38.0",
-    "@tanstack/react-query": "^5.90.0", "@wagmi/core": "^2.22.1", "zod": "^4.1.0", "lucide-react": "^0.468.0", "@fontsource/ibm-plex-sans": "^5.2.0", "@openzeppelin/contracts": "^5.4.0"
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "wagmi": "^2.19.0",
+    "viem": "^2.38.0",
+    "@tanstack/react-query": "^5.90.0",
+    "@wagmi/core": "^2.22.1",
+    "zod": "^4.1.0",
+    "lucide-react": "^0.468.0",
+    "@fontsource/ibm-plex-sans": "^5.2.0",
+    "@openzeppelin/contracts": "^5.4.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.0", "@types/node": "^24.0.0", "@types/react": "^19.2.0", "@types/react-dom": "^19.2.0",
-    "tailwindcss": "^4.1.0", "@tailwindcss/postcss": "^4.1.0", "eslint": "^9.0.0", "eslint-config-next": "^16.0.0",
-    "tsx": "^4.20.0", "@playwright/test": "^1.58.0", "dotenv": "^17.2.0"
+    "typescript": "^5.9.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "tailwindcss": "^4.1.0",
+    "@tailwindcss/postcss": "^4.1.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.0.0",
+    "tsx": "^4.20.0",
+    "@playwright/test": "^1.58.0",
+    "dotenv": "^17.2.0"
   },
-  "overrides": {"ws": "^8.22.0", "decode-uri-component": "^0.5.0", "uuid": "^11.1.1"},
-  "engines": {"node": ">=22.8"}
+  "overrides": {
+    "ws": "^8.22.0",
+    "decode-uri-component": "^0.5.0",
+    "uuid": "^11.1.1"
+  },
+  "engines": {
+    "node": ">=22.8"
+  }
 }
