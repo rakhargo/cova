@@ -25,7 +25,7 @@ const processRelayLimit = Number(process.env.COVA_SESSION_PER_PROCESS_RELAY_LIMI
 const requests = new Map<string,{window:number;count:number}>();
 let relayBudget={period:'',count:0};
 
-export type SessionServiceError=Error&{status:number;code:string;transactionHash?:Hash};
+export type SessionServiceError=Error&{status:number;code:string;transactionHash?:Hash;sessionId?:Hash};
 function failure(status:number,code:string,message:string,details:Partial<SessionServiceError>={}):never {throw Object.assign(new Error(message),{status,code,...details});}
 export function matchesSessionTokenIdentity(chain:number,symbol:string,tokenDecimals:number):boolean {
   const expectedSymbol=chain===421614?'USDG':chain===31337?'MockUSDG':undefined;
@@ -121,7 +121,7 @@ export async function startSession(request:Request,body:Record<string,unknown>) 
   relayBudget.count++;
   let submittedHash:Hash|undefined;
   try{submittedHash=await config.walletClient.writeContract({account:config.relayer,address:config.router,abi:sessionRouterAbi,functionName:'startSession',args});const receipt=await config.publicClient.waitForTransactionReceipt({hash:submittedHash,confirmations:1,timeout:120_000});if(receipt.status!=='success')throw failure(422,'START_REVERTED','Session start transaction reverted.');return {sessionId:quote.sessionId,transactionHash:receipt.transactionHash,status:'confirmed'};}
-  catch(error){if((error as SessionServiceError).status)throw error;if(submittedHash)throw failure(202,'START_PENDING','Session start was submitted; the service remains stopped until chain confirmation.',{transactionHash:submittedHash});throw failure(503,'START_UNAVAILABLE','Session start could not be submitted. Check the Router and relayer.');}
+  catch(error){if((error as SessionServiceError).status)throw error;if(submittedHash)throw failure(202,'START_PENDING','Session start was submitted; the service remains stopped until chain confirmation.',{transactionHash:submittedHash,sessionId:quote.sessionId});throw failure(503,'START_UNAVAILABLE','Session start could not be submitted. Check the Router and relayer.');}
 }
 export async function stopSession(request:Request,sessionId:string,body:Record<string,unknown>) {
   if(!/^0x[\da-f]{64}$/i.test(sessionId))throw failure(400,'INVALID_SESSION','sessionId must be bytes32.');const validUntil=body.validUntil;const signature=body.customerSignature;
@@ -138,6 +138,6 @@ export async function stopSession(request:Request,sessionId:string,body:Record<s
 }
 export function apiError(error:unknown) {
   const known=error as Partial<SessionServiceError>;
-  if(typeof known.status==='number'&&typeof known.code==='string')return Response.json({error:known.message,code:known.code,...(known.status===202?{status:'pending'}:{}),...(known.transactionHash?{transactionHash:known.transactionHash}:{})},{status:known.status,headers:{'Cache-Control':'no-store'}});
+  if(typeof known.status==='number'&&typeof known.code==='string')return Response.json({error:known.message,code:known.code,...(known.status===202?{status:'pending'}:{}),...(known.transactionHash?{transactionHash:known.transactionHash}:{}),...(known.sessionId?{sessionId:known.sessionId}:{})},{status:known.status,headers:{'Cache-Control':'no-store'}});
   return Response.json({error:'Session service is temporarily unavailable.',code:'SESSION_UNAVAILABLE'},{status:503,headers:{'Cache-Control':'no-store'}});
 }

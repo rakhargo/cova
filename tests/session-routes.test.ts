@@ -26,6 +26,6 @@ test('quote route never returns a successful-looking quote for incomplete fields
 });
 
 test('pending start responses preserve the submitted transaction hash without claiming confirmation',async()=>{
-  const hash='0x'+'ab'.repeat(32);const error=Object.assign(new Error('Session start was submitted.'),{status:202,code:'START_PENDING',transactionHash:hash});
-  const response=apiError(error);const body=await response.json();assert.equal(response.status,202);assert.equal(body.status,'pending');assert.equal(body.transactionHash,hash);assert.equal('stack' in body,false);
+  const hash='0x'+'ab'.repeat(32);const sessionId='0x'+'cd'.repeat(32);const error=Object.assign(new Error('Session start was submitted.'),{status:202,code:'START_PENDING',transactionHash:hash,sessionId});
+  const response=apiError(error);const body=await response.json();assert.equal(response.status,202);assert.equal(body.status,'pending');assert.equal(body.transactionHash,hash);assert.equal(body.sessionId,sessionId);assert.equal('stack' in body,false);
 });
