@@ -1,4 +1,5 @@
 'use client';
+import { CustomerSignature, MerchantSignature } from './signed-authorizations';
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { isAddress } from 'viem';
@@ -23,7 +24,7 @@ function AmountInput({ id, value, onChange, label, disabled = false }: { id: str
 function TransactionNotice({ cova }: { cova: CovaController }) {
   const tx = cova.transaction;
   const link = tx.hash && cova.explorerTx(tx.hash);
-  const title = tx.status === 'awaiting-wallet' ? 'Confirm in your wallet' : tx.status === 'submitted' ? 'Transaction submitted' : tx.status === 'pending' ? 'Waiting for confirmation' : tx.status === 'confirmed' ? (cova.demo ? 'Demo action complete' : 'Transaction confirmed') : tx.status === 'failed' ? 'Action failed' : '';
+  const title = tx.status === 'awaiting-wallet' ? 'Confirm in your wallet' : tx.status === 'submitted' ? 'Transaction submitted' : tx.status === 'pending' ? 'Waiting for confirmation' : tx.status === 'confirmed' ? (cova.demo ? 'Demo action complete' : tx.kind==='signature' ? 'Authorization signed' : 'Transaction confirmed') : tx.status === 'failed' ? 'Action failed' : '';
   return <div className="transaction-region" aria-live="polite" aria-atomic="true">{tx.status !== 'idle' && <div className={`transaction-notice ${tx.status}`}>
     {tx.status === 'confirmed' ? <CheckCircle2 size={20}/> : tx.status === 'failed' ? <CircleAlert size={20}/> : <LoaderCircle size={20} className="spinning"/>}
     <div><strong>{title}</strong><p>{tx.error || tx.label}</p>{tx.hash && <span className="transaction-hash" title={tx.hash}>{shortAddress(tx.hash)}</span>}</div>
@@ -137,6 +138,7 @@ export function CovaPlayground() {
                 <div className="authorization-review"><span>Review your authorization</span><p>Reserve up to <strong>{validHold ? amount : '—'} USDG</strong> for merchant <strong className="review-address" title={chosenMerchant}>{validMerchant ? shortAddress(chosenMerchant) : 'not yet selected'}</strong>. The hold expires in <strong>{expiryMinutes < 60 ? `${expiryMinutes} ${expiryMinutes === 1 ? 'minute' : 'minutes'}` : expiryMinutes < 1440 ? `${expiryMinutes / 60} ${expiryMinutes === 60 ? 'hour' : 'hours'}` : `${expiryMinutes / 1440} ${expiryMinutes === 1440 ? 'day' : 'days'}`}</strong>.</p></div>
                 <div className="authorize-footer"><p><LockKeyhole size={14}/><span>The merchant can capture up to this maximum. You can reclaim any remainder after expiry.</span></p><button className="button button-primary authorize-button" type="submit" disabled={!canAct || !validHold || !validMerchant || !validExpiry || holdValue > cova.available}>Authorize hold <ArrowRight size={17}/></button></div>
               </form>
+              <CustomerSignature cova={cova} input={{merchant:chosenMerchant,amount,expiryMinutes,description:reference.trim() || scenario.title}} canAct={canAct} canSign={canAct && validHold && validMerchant && validExpiry && holdValue<=cova.available} execute={execute}/>
             </div>
           </div>
         </> : <>
@@ -145,7 +147,10 @@ export function CovaPlayground() {
           {!cova.demo && cova.connected && <div className="merchant-wallet-line"><Wallet size={15}/><span title={cova.address}>Connected merchant: {cova.address}</span><strong>Wallet {usd(cova.walletBalance)} USDG</strong></div>}
         </>}
 
+        {mode==='merchant' && <MerchantSignature cova={cova} canAct={canAct} execute={execute}/>}
         <div className="hold-list-section">
+          {!cova.demo && cova.receiptHistoryLoading && <p className="field-help" aria-live="polite">Syncing verified receipt history from the chain…</p>}
+          {!cova.demo && cova.receiptHistoryError && <p className="field-error" role="status">{cova.receiptHistoryError} Refresh to retry.</p>}
           <div className="hold-list-heading"><h3>{mode === 'customer' ? 'Your authorizations' : 'Assigned authorizations'}</h3><span>{holds.length} {holds.length === 1 ? 'hold' : 'holds'}</span></div>
           {holds.length === 0 ? <div className="empty-holds"><div className="empty-icon"><LockKeyhole size={24}/></div><div><h4>{mode === 'customer' ? 'Your first hold starts here.' : 'No authorizations assigned yet.'}</h4><p>{mode === 'customer' ? 'Authorize a service above to see funds move from available to reserved.' : cova.demo ? 'Create a hold in the Customer view, then return here to settle it.' : 'Ask a customer to authorize your connected wallet as the merchant.'}</p>{mode === 'merchant' && cova.demo && <button type="button" className="text-button" onClick={() => setMode('customer')}>Go to Customer view <ArrowRight size={14}/></button>}</div></div> : <>
             {activeHolds.map(hold => <HoldCard key={hold.id} hold={hold} cova={cova} mode={mode} now={cova.demo ? now : cova.chainTime ?? 0} canAct={canAct} execute={execute}/>)}

@@ -1,9 +1,6 @@
+import { CovaLogo } from '@/components/cova-logo';
 import { ArrowDownLeft, ArrowRight, ArrowUpRight, Check, ChevronRight, CircleDollarSign, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { CovaPlayground } from '@/components/cova-playground';
-
-function CovaLogo() {
-  return <a className="brand" href="#" aria-label="Cova home"><svg aria-hidden="true" viewBox="0 0 32 32"><path d="M25 8a12 12 0 1 0 0 16" fill="none" stroke="currentColor" strokeWidth="6"/><path d="M17 12h11v8H17z" fill="currentColor"/></svg><span>cova</span></a>;
-}
 
 export default function Home() {
   return <>

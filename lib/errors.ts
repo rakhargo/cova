@@ -9,9 +9,13 @@ const messages:Record<string,string>={
   CaptureExceedsRemaining:'Capture exceeds the remaining authorization.',ExceedsAuthorization:'Capture exceeds the remaining authorization.',
   ERC20InsufficientAllowance:'Approve the USDG deposit amount first.',ERC20InsufficientBalance:'Insufficient wallet USDG. Obtain test tokens first.',
   AmountTooLarge:'Authorization amount is too large.',UnsupportedTokenTransfer:'USDG transfer could not complete. Check token restrictions or pauses.',
+  InvalidSignature:'Customer signature is invalid or was signed for another vault.',InvalidNonce:'Authorization nonce is stale. Ask the customer to sign again.',InvalidNewNonce:'Choose a nonce greater than the current authorization nonce.',InvalidCustomer:'The authorization customer is invalid.',
   InvalidToken:'Configured settlement token is invalid.'
 };
 export function friendlyError(error:unknown):string {
+  const seen=new Set<unknown>();let current:unknown=error;let base:BaseError|undefined;
+  while(current instanceof Error && !seen.has(current) && seen.size<16){seen.add(current);if(!base && current instanceof BaseError)base=current;if((current as Error & {code?:number}).code===4001 || /user (?:rejected|denied)/i.test(current.message))return 'Wallet request rejected. You can try again when ready.';current=current.cause;}
+  if(base)error=base;
   if(error instanceof BaseError) {
     const reverted=error.walk(e=>e instanceof ContractFunctionRevertedError);
     if(reverted instanceof ContractFunctionRevertedError) return messages[reverted.data?.errorName ?? ''] || 'Transaction reverted. Refresh the hold and check the amount, expiry and wallet permissions.';
