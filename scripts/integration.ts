@@ -8,7 +8,7 @@ import { readSnapshot, verifyDeployment } from '../lib/chain';
 const info=JSON.parse(readFileSync('local-deployment.json','utf8')) as {token:Address;vault:Address};
 const mnemonic='test test test test test test test test test test test junk';
 const customer=mnemonicToAccount(mnemonic,{addressIndex:0});const merchant=mnemonicToAccount(mnemonic,{addressIndex:1});
-const rpc='http://127.0.0.1:8545';const client=createPublicClient({chain:foundry,transport:http(rpc)});
+const rpc=process.env.COVA_LOCAL_RPC_URL || 'http://127.0.0.1:8545';const client=createPublicClient({chain:foundry,transport:http(rpc)});
 if(await client.getChainId()!==31337) throw new Error('Integration test only supports local Anvil.');
 const customerWallet=createWalletClient({account:customer,chain:foundry,transport:http(rpc)});
 const merchantWallet=createWalletClient({account:merchant,chain:foundry,transport:http(rpc)});
