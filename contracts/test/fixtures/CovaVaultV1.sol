@@ -4,14 +4,12 @@ pragma solidity 0.8.30;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
-import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 
 /// @title CovaVault
 /// @notice Reserve customer USDG, settle actual charges to the authorized merchant, and release the remainder.
 /// @dev Amounts are token base units. Designed for a standard, non-rebasing ERC-20 such as USDG.
 ///      Token balance changes must exactly match transfers. Direct donations do not create customer credit.
-contract CovaVault is ReentrancyGuard, EIP712 {
+contract CovaVaultV1 is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     enum HoldStatus {
@@ -31,19 +29,6 @@ contract CovaVault is ReentrancyGuard, EIP712 {
         bytes32 referenceId;
     }
 
-    struct HoldAuthorization {
-        address customer;
-        address merchant;
-        uint128 maxAmount;
-        uint64 expiresAt;
-        uint256 nonce;
-        bytes32 referenceId;
-    }
-
-    error InvalidCustomer();
-    error InvalidSignature();
-    error InvalidNonce();
-    error InvalidNewNonce();
     error InvalidToken();
     error InvalidAmount();
     error InvalidMerchant();
@@ -57,7 +42,6 @@ contract CovaVault is ReentrancyGuard, EIP712 {
     error UnsupportedTokenTransfer();
     error PageSizeTooLarge();
 
-    event AuthorizationsInvalidated(address indexed customer, uint256 newNonce);
     event Deposited(address indexed customer, uint256 amount);
     event Withdrawn(address indexed customer, uint256 amount);
     event HoldCreated(
@@ -76,10 +60,6 @@ contract CovaVault is ReentrancyGuard, EIP712 {
     IERC20 public immutable token;
     uint256 public totalLiability;
     uint256 public constant MAX_PAGE_SIZE = 100;
-    bytes32 private constant HOLD_AUTHORIZATION_TYPEHASH = keccak256(
-        "HoldAuthorization(address customer,address merchant,uint128 maxAmount,uint64 expiresAt,uint256 nonce,bytes32 referenceId)"
-    );
-    mapping(address => uint256) public nonces;
     mapping(address => uint256) public availableBalance;
     mapping(address => uint256) public heldBalance;
     mapping(bytes32 => Hold) public holds;
@@ -87,63 +67,9 @@ contract CovaVault is ReentrancyGuard, EIP712 {
     mapping(address => bytes32[]) private merchantHoldIds;
     uint256 private nextHoldNonce;
 
-    constructor(address token_) EIP712("CovaVault", "2") {
+    constructor(address token_) {
         if (token_ == address(0) || token_.code.length == 0) revert InvalidToken();
         token = IERC20(token_);
-    }
-
-    /// @notice Protocol version for clients detecting signed authorization support.
-    function version() external pure returns (uint256) {
-        return 2;
-    }
-
-    /// @notice EIP-712 digest bound to this chain and vault, with the exact authorization field widths.
-    function authorizationDigest(HoldAuthorization calldata authorization) public view returns (bytes32) {
-        return _hashTypedDataV4(
-            keccak256(
-                abi.encode(
-                    HOLD_AUTHORIZATION_TYPEHASH,
-                    authorization.customer,
-                    authorization.merchant,
-                    authorization.maxAmount,
-                    authorization.expiresAt,
-                    authorization.nonce,
-                    authorization.referenceId
-                )
-            )
-        );
-    }
-
-    /// @notice Any relayer can reserve the signed customer's funds using a current EOA or ERC1271 signature.
-    /// @dev A signature reserves nothing before submission. A reverting submission does not consume its nonce.
-    function authorizeHold(HoldAuthorization calldata authorization, bytes calldata signature)
-        external
-        nonReentrant
-        returns (bytes32 holdId)
-    {
-        address customer = authorization.customer;
-        if (customer == address(0)) revert InvalidCustomer();
-        if (authorization.nonce != nonces[customer]) revert InvalidNonce();
-        if (!SignatureChecker.isValidSignatureNow(customer, authorizationDigest(authorization), signature)) {
-            revert InvalidSignature();
-        }
-        // Checked arithmetic must also hold after arbitrary nonce invalidation jumps.
-        nonces[customer] = authorization.nonce + 1;
-        holdId = _createHold(
-            customer,
-            authorization.merchant,
-            authorization.maxAmount,
-            authorization.expiresAt,
-            authorization.referenceId
-        );
-    }
-
-    /// @notice Advance only the caller's signed nonce; this does not cancel already active holds.
-    /// @dev Reject the maximum value so invalidation cannot immediately exhaust the checked nonce counter.
-    function invalidateAuthorizations(uint256 newNonce) external nonReentrant {
-        if (newNonce <= nonces[msg.sender] || newNonce == type(uint256).max) revert InvalidNewNonce();
-        nonces[msg.sender] = newNonce;
-        emit AuthorizationsInvalidated(msg.sender, newNonce);
     }
 
     /// @notice Fund the caller's available balance after a separate token approval.
@@ -176,27 +102,17 @@ contract CovaVault is ReentrancyGuard, EIP712 {
         nonReentrant
         returns (bytes32 holdId)
     {
-        return _createHold(msg.sender, merchant, amount, expiresAt, referenceId);
-    }
-
-    function _createHold(
-        address customer,
-        address merchant,
-        uint256 amount,
-        uint64 expiresAt,
-        bytes32 referenceId
-    ) internal returns (bytes32 holdId) {
         if (merchant == address(0) || merchant == address(this)) revert InvalidMerchant();
         if (amount == 0) revert InvalidAmount();
         if (amount > type(uint128).max) revert AmountTooLarge();
         if (expiresAt <= block.timestamp) revert InvalidExpiry();
-        if (amount > availableBalance[customer]) revert InsufficientAvailableBalance();
+        if (amount > availableBalance[msg.sender]) revert InsufficientAvailableBalance();
 
-        holdId = keccak256(abi.encode(address(this), block.chainid, customer, ++nextHoldNonce));
-        availableBalance[customer] -= amount;
-        heldBalance[customer] += amount;
+        holdId = keccak256(abi.encode(address(this), block.chainid, msg.sender, ++nextHoldNonce));
+        availableBalance[msg.sender] -= amount;
+        heldBalance[msg.sender] += amount;
         holds[holdId] = Hold({
-            customer: customer,
+            customer: msg.sender,
             merchant: merchant,
             // Checked above against type(uint128).max.
             // forge-lint: disable-next-line(unsafe-typecast)
@@ -206,9 +122,9 @@ contract CovaVault is ReentrancyGuard, EIP712 {
             status: HoldStatus.Active,
             referenceId: referenceId
         });
-        customerHoldIds[customer].push(holdId);
+        customerHoldIds[msg.sender].push(holdId);
         merchantHoldIds[merchant].push(holdId);
-        emit HoldCreated(holdId, customer, merchant, amount, expiresAt, referenceId);
+        emit HoldCreated(holdId, msg.sender, merchant, amount, expiresAt, referenceId);
     }
 
     /// @notice The assigned merchant can capture repeatedly strictly before expiry, up to the remaining amount.

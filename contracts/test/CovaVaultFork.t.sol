@@ -10,8 +10,10 @@ contract CovaVaultForkTest is Test {
     address internal constant OFFICIAL_USDG = 0xFFC95faa3d63Cde504a05B567C600B78C0b41892;
     IERC20Metadata internal token;
     CovaVault internal vault;
-    address internal customer = makeAddr("fork customer");
+    uint256 internal constant CUSTOMER_KEY = 0xF04;
+    address internal customer = vm.addr(CUSTOMER_KEY);
     address internal merchant = makeAddr("fork merchant");
+    address internal relayer = makeAddr("fork public relayer");
     bool internal forkEnabled;
 
     function setUp() public {
@@ -37,6 +39,37 @@ contract CovaVaultForkTest is Test {
         vm.skip(!forkEnabled);
         vm.prank(customer);
         bytes32 id = vault.createHold(merchant, 20e6, uint64(block.timestamp + 1 hours), keccak256("court"));
+        vm.startPrank(merchant);
+        vault.capture(id, 14e6);
+        vault.release(id);
+        vm.stopPrank();
+        assertEq(token.balanceOf(merchant), 14e6);
+        assertEq(vault.availableBalance(customer), 86e6);
+        assertEq(vault.heldBalance(customer), 0);
+        assertEq(token.balanceOf(address(vault)), vault.totalLiability());
+        vm.prank(customer);
+        vault.withdraw(86e6);
+        assertEq(token.balanceOf(customer), 86e6);
+        assertEq(vault.totalLiability(), 0);
+        assertEq(token.balanceOf(address(vault)), 0);
+    }
+
+    function testOfficialUSDGSignedAuthorizationPartialCaptureReleaseAndWithdrawal() public {
+        vm.skip(!forkEnabled);
+        CovaVault.HoldAuthorization memory authorization = CovaVault.HoldAuthorization({
+            customer: customer,
+            merchant: merchant,
+            maxAmount: 20e6,
+            expiresAt: uint64(block.timestamp + 1 hours),
+            nonce: 0,
+            referenceId: keccak256("signed court")
+        });
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(CUSTOMER_KEY, vault.authorizationDigest(authorization));
+        vm.prank(relayer);
+        bytes32 id = vault.authorizeHold(authorization, abi.encodePacked(r, s, v));
+        assertEq(vault.nonces(customer), 1);
+        assertEq(vault.heldBalance(customer), 20e6);
+        assertEq(vault.heldBalance(relayer), 0);
         vm.startPrank(merchant);
         vault.capture(id, 14e6);
         vault.release(id);
