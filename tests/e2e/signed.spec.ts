@@ -23,12 +23,12 @@ test('customer signs, separate merchant submits, captures14 and releases6',async
  await expect(page.locator('.active-hold').first()).toBeVisible();
  await page.getByRole('button',{name:'Capture 14 USDG',exact:true}).first().click();await expect(page.locator('.active-hold .remaining-amount').first()).toContainText('6');
  await page.getByRole('button',{name:'Release remaining',exact:true}).first().click();
- await expect(page.locator('.settled-hold').first()).toContainText('14 USDG settled to the merchant. 6 USDG returned to the customer.');
- await page.locator('.settled-hold').first().getByText('Authorization details',{exact:true}).click();
+ await expect(page.locator('.settled-hold').first()).toContainText('14 USDG paid to the merchant. 6 USDG back to the customer.');
+ await page.locator('.settled-hold').first().getByText('Details',{exact:true}).click();
  await expect(page.locator('.settled-hold').first().locator('.receipt-links')).toContainText('Capture');
  const context=await page.context().browser()!.newContext();const other=await context.newPage();
  await injectedWallet(other,info!);await other.goto(LIVE_URL+'/#playground');await other.getByRole('button',{name:'Connect wallet',exact:true}).click();await other.getByRole('button',{name:'Switch network',exact:true}).click();
- await expect(other.locator('.settled-hold').first()).toBeVisible();await other.locator('.settled-hold').first().getByText('Authorization details',{exact:true}).click();
+ await expect(other.locator('.settled-hold').first()).toBeVisible();await other.locator('.settled-hold').first().getByText('Details',{exact:true}).click();
  await expect(other.locator('.settled-hold').first().locator('.receipt-links')).toContainText('Capture');
  await expect(other.locator('.settled-hold').first().locator('.receipt-links')).toContainText('Release');
  await context.close();

@@ -5,7 +5,7 @@
 - @cova/sdk 0.2.0 is independently packable ESM with TypeScript declarations and viem as its only peer. It prepares/signs/submits authorizations, provides direct vault operations, and validates chain/token/wallet context.
 - Receipt history is reconstructed from actual hold events, survives empty localStorage/different browsers, preserves every capture, handles partial scans/provider limits and shallow reorgs. Balances and statuses still come from contract storage.
 - The UI signs an actual wallet authorization and lets the assigned merchant import/submit it. Signing itself reserves nothing. Pending packet display/invalidation is scoped to its customer, chain and vault. Wallet rejection and stale signatures have readable errors.
-- The supplied Cova logo.png is used unchanged at public/brand/cova-logo.png. The header uses a small reusable component. Arya still owns the broader frontend redesign.
+- The supplied Cova logo.png is used unchanged at public/cova-logo.png through a reusable header/footer component. Arya's landing/playground redesign is integrated while retaining signed authorizations, shared receipts and safe expiry formatting.
 
 ## Validation
 - Foundry:97 passed, 0 failed, 3 opt-in fork tests skipped without RPC. Four invariants each run 128×64 calls.

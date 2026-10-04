@@ -34,7 +34,7 @@ test('real local wallet: wrong chain, rejected approval, deposit, reserve, merch
   await page.getByRole('button',{name:'Capture 14 USDG',exact:true}).click();
   await expect(page.locator('.active-hold .remaining-amount')).toContainText('6');
   await page.getByRole('button',{name:'Release remaining',exact:true}).click();
-  await expect(page.locator('.settled-hold').first()).toContainText('14 USDG settled to the merchant. 6 USDG returned to the customer.');
+  await expect(page.locator('.settled-hold').first()).toContainText('14 USDG paid to the merchant. 6 USDG back to the customer.');
   await page.evaluate(()=>{(window as unknown as {covaSetWallet:(role:string)=>void}).covaSetWallet('customer');});
   await page.getByRole('button',{name:'Customer',exact:true}).click();
   await expect(available).toHaveText(`${formatAmount(baseline+86_000_000n)}USDG`);
@@ -66,5 +66,5 @@ test('Retry recovers an initial RPC deployment verification failure',async({page
   await page.getByRole('button',{name:'Retry',exact:true}).click();
   await expect(page.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);
   await page.getByRole('button',{name:'Connect wallet',exact:true}).click();await page.getByRole('button',{name:'Switch network',exact:true}).click();
-  await expect(page.locator('.balance-metric').first()).not.toContainText('—');
+  await expect(page.locator('.balance-metric').first()).not.toContainText('-');
 });
