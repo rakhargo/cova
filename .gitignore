@@ -13,3 +13,4 @@ local-deployment.json
 
 sdk/dist/
 *.tgz
+.vercel

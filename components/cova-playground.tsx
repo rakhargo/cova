@@ -5,6 +5,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { isAddress } from 'viem';
 import { Camera, CheckCircle2, ChevronDown, CircleAlert, Clock3, ExternalLink, Info, LoaderCircle, RefreshCw, Zap } from 'lucide-react';
 import { useCova } from '@/lib/use-cova';
+import { OFFICIAL_USDG } from '@/lib/config';
 import { formatAmount, shortAddress } from '@/lib/format';
 import type { CovaController, Mode } from '@/lib/types';
 import { HoldCard } from './hold-card';
@@ -44,6 +45,7 @@ export function CovaPlayground() {
   const [withdrawAmount, setWithdrawAmount] = useState('10');
   const [uiError, setUiError] = useState<string>();
   const [now, setNow] = useState(0);
+  const [tokenCopied,setTokenCopied]=useState(false);
   useEffect(() => { const update = () => setNow(Math.floor(Date.now() / 1000)); update(); const timer = setInterval(update, 1000); return () => clearInterval(timer); }, []);
   const canAct = cova.ready && !cova.busy && !cova.loading && !cova.wrongChain && !cova.readError && (cova.demo || cova.connected);
   const balancesReady = cova.demo || (cova.ready && cova.connected && !cova.wrongChain && !cova.readError);
@@ -121,7 +123,7 @@ export function CovaPlayground() {
                 <div><span>Wallet</span><strong>{usd(cova.walletBalance)}</strong></div>
                 <div><span>Allowance</span><strong>{usd(cova.allowance)}</strong></div>
               </div>
-              {!cova.demo && !cova.local && <a className="test-token-link" href="https://docs.paxos.com/guides/developer/fund-sandbox-with-test-crypto" target="_blank" rel="noreferrer">Get test USDG <ExternalLink size={12}/></a>}
+              {!cova.demo && !cova.local && <div className="faucet-help"><a className="test-token-link" href="https://faucet.paxos.com/" target="_blank" rel="noreferrer">Open Paxos Testnet Faucet <ExternalLink size={12}/></a><p>Select Arbitrum Sepolia if available. Faucet eligibility and access from your network have not been verified.</p><div className="token-address-row"><code title={OFFICIAL_USDG}>{shortAddress(OFFICIAL_USDG)}</code><button type="button" className="text-button" onClick={()=>{void navigator.clipboard.writeText(OFFICIAL_USDG).then(()=>{setTokenCopied(true);setTimeout(()=>setTokenCopied(false),1800);}).catch(()=>setUiError('Clipboard access failed. Copy the USDG address from the verified Paxos token details.'));}}>{tokenCopied?'Copied':'Copy USDG address'}</button></div><small>Official Arbitrum Sepolia USDG · {shortAddress(OFFICIAL_USDG)}. You also need Arbitrum Sepolia ETH to pay transaction gas.</small></div>}
               <form onSubmit={event => { event.preventDefault(); if (canAct && validDeposit && !needsApproval && depositValue <= cova.walletBalance) void execute(() => cova.deposit(depositAmount)); }}>
                 <AmountInput id="deposit-amount" label="Deposit" value={depositAmount} onChange={setDepositAmount} disabled={cova.busy}/>
                 <div className="funding-actions">

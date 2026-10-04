@@ -17,6 +17,7 @@
     "test:integration": "node --import tsx scripts/integration.ts",
     "build:sdk": "tsc -p sdk/tsconfig.json",
     "test:sdk:integration": "node --import tsx scripts/sdk-integration.ts",
+    "session:provider": "node --import tsx examples/session-provider/server.ts",
     "prebuild": "npm run build:sdk",
     "pretypecheck": "npm run build:sdk",
     "predev": "npm run build:sdk",

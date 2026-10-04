@@ -1,5 +1,6 @@
 import { CovaLogo } from '@/components/cova-logo';
 import { CovaPlayground } from '@/components/cova-playground';
+import { SessionCheckout } from '@/components/session-checkout';
 
 export default function Home() {
   return <>
@@ -72,6 +73,7 @@ export default function Home() {
         </div>
       </section>
 
+      <SessionCheckout />
       <CovaPlayground />
 
       <section className="primitive-section" aria-labelledby="primitive-heading">

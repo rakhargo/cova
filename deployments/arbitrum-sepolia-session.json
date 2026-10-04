@@ -1,0 +1,31 @@
+{
+  "network": "Arbitrum Sepolia",
+  "chainId": 421614,
+  "vault": "0xC5E8bd21b3691815e9F0CD7e4F80C656A56C1eD5",
+  "token": "0xFFC95faa3d63Cde504a05B567C600B78C0b41892",
+  "deploymentTransaction": "0xff288bdbf172876f66d632d402b8fd1baff3e0af24d5b0e46db47c822a42788e",
+  "router": "0xe8ba68458e932921f5401f48eb36ed881255db5a",
+  "blockNumber": 315710844,
+  "receiptConfirmed": true,
+  "runtimeBytes": 10251,
+  "configurationVerified": true,
+  "eip712DomainVerified": true,
+  "provider": "0xf8D35cE0E4d343a36D4D6008c9eFaa1D2cBb146b",
+  "relayer": "0xAd2f1f58FE7DDBA783d4ab299A2ff1AEA0aAae49",
+  "quoteDigestMatchesViem": true,
+  "frontend": {
+    "productionUrl": "https://cova-zeta.vercel.app",
+    "deploymentUrl": "https://cova-gc1nsvqkr-rakhargos-projects.vercel.app",
+    "deploymentId": "dpl_hEMCvtBZPF9Ti8aG1BLKUB6mUtgL",
+    "productionBuildPassed": true,
+    "publicHttpStatus": 200,
+    "sessionApiConfigurationVerified": true,
+    "clientSecretScanPassed": true,
+    "fundedPublicSettlement": "pending: customer needs official test USDG and vault deposit"
+  },
+  "sourceVerification": {
+    "provider": "Arbiscan",
+    "status": "verified",
+    "contractUrl": "https://sepolia.arbiscan.io/address/0xe8ba68458e932921f5401f48eb36ed881255db5a#code"
+  }
+}

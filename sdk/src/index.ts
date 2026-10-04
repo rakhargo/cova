@@ -1,7 +1,11 @@
 export { vaultAbi } from './abi.js';
 export { authorizationTypes, authorizationDomain, authorizationTypedData, authorizationDigest, encodeSignedAuthorization, decodeSignedAuthorization } from './authorization.js';
 export type { HoldAuthorization, SignedAuthorization } from './authorization.js';
+export { checkedAddress, checkedUint, checkedHash } from './authorization.js';
 export { createCovaClient } from './client.js';
 export type { CovaClient, CovaClientOptions, CovaBalances, CovaHold } from './client.js';
 export { readHoldHistory, receiptsFromEvents } from './history.js';
 export type { HoldReceipt, HoldHistoryEvent, HoldHistoryOptions, HoldHistoryResult } from './history.js';
+export { sessionRouterAbi } from './session-abi.js';
+export { createCovaSessionClient, checkedSessionQuote, sessionQuoteDomain, sessionQuoteTypedData, sessionQuoteDigest, sessionStopTypedData, readSessionHistory } from './sessions.js';
+export type { SessionQuote, SessionRecord, SessionReceipt, SessionHistoryOptions, SessionHistoryResult, SessionClientOptions } from './sessions.js';
