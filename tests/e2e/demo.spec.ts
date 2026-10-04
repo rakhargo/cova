@@ -5,7 +5,8 @@ test('court booking demo reserves 20, captures 14, releases 6 with no fabricated
   await page.goto('/');
   await expect(page.getByRole('heading',{name:'Reserve now. Settle later.'})).toBeVisible();
   await page.getByRole('link',{name:'Try Cova',exact:true}).click();
-  await expect(page.locator('.demo-banner')).toContainText('No blockchain transactions');
+  await expect(page.getByRole('heading',{name:'Playground',exact:true})).toBeVisible();
+  await expect(page.locator('.section-note')).toContainText('No blockchain transactions');
   await page.getByRole('button',{name:'Authorize hold',exact:true}).click();
   await expect(page.locator('.balance-metric').first()).toContainText('80');
   await expect(page.locator('.reserved-metric').first()).toContainText('20');
@@ -14,7 +15,7 @@ test('court booking demo reserves 20, captures 14, releases 6 with no fabricated
   await expect(page.locator('.active-hold .hold-amounts')).toContainText('14');
   await page.getByRole('button',{name:'Release remaining',exact:true}).click();
   const settlement=page.locator('.settled-hold');
-  await expect(settlement).toContainText('14 USDG settled to the merchant. 6 USDG returned to the customer.');
+  await expect(settlement).toContainText('14 USDG paid to the merchant. 6 USDG back to the customer.');
   await page.getByRole('button',{name:'Customer',exact:true}).click();
   await expect(page.locator('.balance-metric').first()).toContainText('86');
   await expect(page.locator('.reserved-metric').first()).toContainText('0');
@@ -29,13 +30,13 @@ test('EV preset uses exact cents and demo approval/deposit updates allowance',as
   await expect(page.getByRole('button',{name:'Deposit USDG',exact:true})).toBeEnabled();
   await page.getByRole('button',{name:'Deposit USDG',exact:true}).click();
   await expect(page.locator('.balance-metric').first()).toContainText('150');
-  await page.getByRole('button',{name:/EV charging.*30 USDG maximum/}).click();
+  await page.getByRole('button',{name:/EV charging.*30 max/}).click();
   await page.getByRole('button',{name:'Authorize hold',exact:true}).click();
   await page.getByRole('button',{name:'Merchant',exact:true}).click();
   await page.getByRole('button',{name:'Capture 17.42 USDG',exact:true}).click();
   await expect(page.locator('.active-hold .remaining-amount')).toContainText('12.58');
   await page.getByRole('button',{name:'Release remaining',exact:true}).click();
-  await expect(page.locator('.settled-hold')).toContainText('17.42 USDG settled to the merchant. 12.58 USDG returned to the customer.');
+  await expect(page.locator('.settled-hold')).toContainText('17.42 USDG paid to the merchant. 12.58 USDG back to the customer.');
 });
 test('mobile supports the flow without horizontal overflow and invalid amount blocks submission',async({page})=>{
   await page.setViewportSize({width:390,height:844});await page.goto('/#playground');
