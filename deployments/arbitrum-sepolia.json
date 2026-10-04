@@ -1,53 +1,54 @@
 {
   "network": "Arbitrum Sepolia",
   "chainId": 421614,
-  "vault": "0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428",
+  "version": 2,
+  "vault": "0xC5E8bd21b3691815e9F0CD7e4F80C656A56C1eD5",
   "token": "0xFFC95faa3d63Cde504a05B567C600B78C0b41892",
-  "deploymentTransaction": "0x930e603ac6bdd58ae0e699365a421eecfd47f2545c0d056de69c0f8c78cb17cb",
-  "blockNumber": 315383406,
-  "blockTimestamp": 1791044525,
+  "deploymentTransaction": "0x3043d8144f3b41c5524eb8e4f25567d09e9c37f4f44aca1d2601929e3123c25b",
+  "blockNumber": 315667402,
+  "blockTimestamp": 1791115588,
   "deployer": "0xadf00a2476c77163B607af6E55A6a90185ae33f6",
-  "gasUsed": "1283423",
-  "effectiveGasPriceWei": "50896001",
-  "gasCostETH": "0.000065321098291423",
-  "sourceCommit": "5342b4b972cf565cc95459189637fe6b025cbb89",
+  "gasUsed": "1900960",
+  "effectiveGasPriceWei": "60750001",
+  "gasCostETH": "0.00011548332190096",
+  "sourceCommit": "7bbb751ae3050dcd81fb500524a8873c457bf611",
   "compiler": "0.8.30+commit.73712a01",
   "optimizer": {
     "enabled": true,
     "runs": 200
   },
   "evmVersion": "cancun",
-  "runtimeBytes": 5442,
+  "runtimeBytes": 8142,
   "receiptConfirmed": true,
-  "runtimeMatchesCompiledArtifact": true,
+  "creationMatchesCompiledArtifact": true,
+  "runtimeMatchesOutsideImmutables": true,
+  "immutableSitesConsistent": true,
   "tokenMatchesOfficialUSDG": true,
+  "eip712DomainValidated": true,
+  "authorizationDigestMatchesViem": true,
+  "initialLiabilityUSDG": "0",
+  "previousDeployment": {
+    "version": 1,
+    "vault": "0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428",
+    "record": "deployments/arbitrum-sepolia-v1.json"
+  },
   "sourceVerification": {
     "status": "verified",
-    "provider": "Sourcify",
-    "verificationId": "4c446c88-9f50-4775-bd19-8450761d5922",
-    "contractUrl": "https://repo.sourcify.dev/421614/0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428",
-    "runtimeMatch": "exact_match",
-    "creationMatch": "exact_match",
-    "verifiedAt": "2026-10-03T16:27:55Z",
-    "external": {
-      "blockscout": {
-        "status": "verified",
-        "result": "Pass - Verified",
-        "url": "https://arbitrum-sepolia.blockscout.com/address/0xeb008dd97b0d17200055A3c7b5c60aB8b31CE428?tab=contract"
-      },
-      "etherscan": {
-        "status": "forwarding-failed",
-        "reason": "Sourcify automatic forwarding reached its daily source-submission limit."
-      }
-    }
+    "provider": "Arbiscan",
+    "guid": "aegwpppgv8gfcsvkkra2t4yjig2gatikknsvnquzrtqfxrbc7h",
+    "result": "Pass - Verified",
+    "contractUrl": "https://sepolia.arbiscan.io/address/0xC5E8bd21b3691815e9F0CD7e4F80C656A56C1eD5#code"
   },
   "frontendValidation": {
     "productionBuild": true,
     "liveReadCheck": true,
-    "network": "Arbitrum Sepolia",
+    "paymentLifecycleOnPublicNetwork": "pending: funded USDG customer and separate merchant wallet required",
+    "protocolVersion": 2,
+    "decimals": 6,
     "checkedAddress": "0xadf00a2476c77163B607af6E55A6a90185ae33f6",
-    "walletProvider": "read-only test provider; actual injected wallet signing remains for funded live E2E",
-    "paymentLifecycleOnPublicNetwork": "not yet tested: USDG and separate merchant wallet required",
+    "walletProvider": "Read-only validation provider; no signing or transaction submission.",
+    "mobileOverflow": false,
+    "pageErrors": 0,
     "browserBundleSecretCheckPassed": true
   }
 }
