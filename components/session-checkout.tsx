@@ -37,7 +37,19 @@ function SessionCheckoutView(){
 
   const refreshSession=useCallback(async(current:ActiveSession)=>{
     if(!sdk||!publicClient)return;
-    const [next,block]=await Promise.all([sdk.session(current.id),publicClient.getBlock()]);setRecord(next);setNetworkTime(block.timestamp);
+    const [next,block]=await Promise.all([sdk.session(current.id),publicClient.getBlock()]);
+    if(next.status===0&&current.startHash){
+      try{
+        const receipt=await publicClient.getTransactionReceipt({hash:current.startHash});
+        if(receipt.status==='reverted'){
+          setSession(undefined);setRecord(undefined);setQuote(undefined);setStatus('');
+          setError('The session start transaction reverted. No service started. Request a fresh quote to try again.');
+          return;
+        }
+      }catch{/* No receipt yet or a temporary RPC failure; keep the pending state and poll again. */}
+    }
+    setRecord(next);setNetworkTime(block.timestamp);
+    if(next.status===0&&current.startHash)setStatus('Start transaction is pending. The provider stays stopped until Router state confirms it.');
     if(next.status===1)setStatus('Session active, confirmed from Router state. The provider may run its service.');
     else if(next.status===2)setStatus('Settlement confirmed. Review the charge and returned balance below.');
     else if(next.status===3)setStatus('Expired reservation recovery is confirmed onchain.');
@@ -82,7 +94,7 @@ function SessionCheckoutView(){
       <div className="session-intro"><div><p className="session-overline">ONE REFERENCE SERVICE</p><h2 id="session-heading">A timed session with a clear rate.</h2><p>Approve the provider and billing terms first. Cova reserves your selected budget, then settles from the confirmed onchain session time.</p></div><div className="session-state-path" aria-label="Session flow"><span>QUOTE</span><b>›</b><span>RESERVE</span><b>›</b><span>RUN</span><b>›</b><span>SETTLE</span></div></div>
       {!sessionEnabled&&<div className="session-disabled"><Info size={18}/><div><strong>Timed checkout is not configured here.</strong><p>This page keeps the working direct hold playground below. A session Router and dedicated server provider/relayer accounts are required to enable this flow.</p></div></div>}
       {covaConfig.local&&sessionEnabled&&<div className="session-notice"><Info size={17}/><span>Local Anvil test only. MockUSDG has no public-chain value.</span></div>}
-      {!cova.demo&&cova.wrongChain&&<div className="session-notice session-error"><Info size={17}/><span>Switch to {cova.chainName} before authorizing a session.</span><button className="text-button" type="button" onClick={()=>void cova.switchChain()}>Switch network</button></div>}
+      {sessionEnabled&&!cova.demo&&cova.wrongChain&&<div className="session-notice session-error"><Info size={17}/><span>Switch to {cova.chainName} before authorizing a session.</span><button className="text-button" type="button" onClick={()=>void cova.switchChain()}>Switch network</button></div>}
       <div className="session-layout">
         <div className="session-terms">
           <div className="session-terms-head"><span>HOW BILLING WORKS</span><span>USDG · 6 decimals</span></div>
@@ -110,7 +122,7 @@ function SessionCheckoutView(){
             {quote&&<div className="quote-consent" aria-live="polite"><span>PROVIDER QUOTE · REVIEW BEFORE SIGNING</span><dl><div><dt>Provider</dt><dd title={quote.quote.provider as string}>{shortAddress(String(quote.quote.provider))}</dd></div><div><dt>Rate</dt><dd>{formatAmount(BigInt(String(quote.quote.ratePerMinute)),6)} USDG per minute</dd></div><div><dt>Maximum spend</dt><dd>{formatAmount(BigInt(String(quote.quote.maxAmount)),6)} USDG</dd></div><div><dt>Session limit</dt><dd>{Math.floor(Number(quote.quote.maxDurationSeconds)/60)} minutes</dd></div><div><dt>Start before</dt><dd>{new Date(Number(BigInt(String(quote.quote.startBy)))*1000).toLocaleTimeString()}</dd></div><div><dt>Hold expiry</dt><dd>{new Date(Number(BigInt(String(quote.quote.holdExpiresAt)))*1000).toLocaleTimeString()}</dd></div></dl><p>You are authorizing up to this amount. The final charge uses the displayed rate and session time. Unused funds return to your available Cova balance.</p></div>}
             {!quote&&<button className="button button-outline button-full" type="submit" disabled={working||!sessionEnabled||!account.address||!cova.ready||!amount||amount<=0n||available<amount}>{working?<><LoaderCircle size={16} className="spinning"/>Request quote</>:'Review session quote'}</button>}
             {quote&&<button className="button button-primary button-full" type="button" onClick={()=>void authorizeAndStart()} disabled={!canAuthorize||working}>{working?<><LoaderCircle size={16} className="spinning"/>Authorize and start</>:`Authorize up to ${maximum} USDG and start`}</button>}
-            {!cova.connected&&<button className="button button-outline button-full" type="button" onClick={()=>void cova.connect()}>Connect wallet</button>}
+            {sessionEnabled&&!cova.connected&&<button className="button button-outline button-full" type="button" onClick={()=>void cova.connect()}>Connect wallet</button>}
             {cova.ready&&amount&&available<amount&&<div className="session-funding-hint"><p>Deposit enough USDG into Cova before starting. Your reserved session balance cannot be withdrawn while the service runs.</p><a href="#playground">Open funding controls</a></div>}
           </form>}
           {session&&record?.status===1&&<div className="session-active-controls"><p>Provider may begin only after the start transaction confirms. Your wallet can stop and settle the session at any time.</p><button className="button button-primary button-full" type="button" disabled={working||!sdk||!account.address} onClick={()=>void stopSession()}>{working?<><LoaderCircle size={16} className="spinning"/>Settling session</>:'Stop and settle session'}</button><button className="text-button" type="button" onClick={()=>void refreshSession(session)}>Refresh onchain session status</button></div>}
