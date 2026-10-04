@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import {
   createPublicClient, createWalletClient, defineChain, hashTypedData, http, keccak256, parseAbi, toHex,
   verifyTypedData, type Address, type Hash, type Hex,
@@ -26,6 +27,11 @@ let relayBudget={period:'',count:0};
 
 export type SessionServiceError=Error&{status:number;code:string;transactionHash?:Hash};
 function failure(status:number,code:string,message:string,details:Partial<SessionServiceError>={}):never {throw Object.assign(new Error(message),{status,code,...details});}
+export function matchesSessionTokenIdentity(chain:number,symbol:string,tokenDecimals:number):boolean {
+  const expectedSymbol=chain===421614?'USDG':chain===31337?'MockUSDG':undefined;
+  return expectedSymbol!==undefined&&symbol===expectedSymbol&&tokenDecimals===6;
+}
+export function createSessionId():Hash {return `0x${randomBytes(32).toString('hex')}`;}
 function address(value:string|undefined,label:string):Address {
   if(!value||!/^0x[\da-f]{40}$/i.test(value)||/^0x0{40}$/i.test(value))throw failure(503,'SESSION_DISABLED',`Session checkout is unavailable: ${label} is not configured.`);
   return value as Address;
@@ -73,11 +79,11 @@ async function verifyDeployment(config:ReturnType<typeof env>) {
     publicClient.readContract({address:token,abi:parseAbi(['function symbol() view returns (string)']),functionName:'symbol'}),
     publicClient.readContract({address:token,abi:parseAbi(['function decimals() view returns (uint8)']),functionName:'decimals'})
   ]);
-  if(!routerCode||routerCode==='0x'||!vaultCode||vaultCode==='0x'||actualVault.toLowerCase()!==vault.toLowerCase()||actualToken.toLowerCase()!==token.toLowerCase()||vaultToken.toLowerCase()!==token.toLowerCase()||version!==2n||tokenSymbol!=='USDG'||decimals!==6||domain[1]!=='CovaSessionRouter'||domain[2]!=='1'||domain[3]!==BigInt(chainId)||domain[4].toLowerCase()!==router.toLowerCase())throw failure(503,'SESSION_DISABLED','Session Router, CovaVault v2, USDG or signing domain failed verification.');
+  if(!routerCode||routerCode==='0x'||!vaultCode||vaultCode==='0x'||actualVault.toLowerCase()!==vault.toLowerCase()||actualToken.toLowerCase()!==token.toLowerCase()||vaultToken.toLowerCase()!==token.toLowerCase()||version!==2n||!matchesSessionTokenIdentity(chainId,tokenSymbol,decimals)||domain[1]!=='CovaSessionRouter'||domain[2]!=='1'||domain[3]!==BigInt(chainId)||domain[4].toLowerCase()!==router.toLowerCase())throw failure(503,'SESSION_DISABLED','Session Router, CovaVault v2, USDG or signing domain failed verification.');
 }
 function makeQuote(customer:Address,serviceId:Hash,maxAmount:bigint,duration:number,provider:Address):SessionQuote {
   const now=BigInt(Math.floor(Date.now()/1000));const startBy=now+BigInt(startWindow);const holdExpiresAt=startBy+BigInt(duration+settlementGrace);
-  return checkedSessionQuote({sessionId:`0x${crypto.randomUUID().replaceAll('-','')}`,customer,provider,serviceId,ratePerMinute,maxAmount,maxDurationSeconds:duration,startBy,holdExpiresAt},now);
+  return checkedSessionQuote({sessionId:createSessionId(),customer,provider,serviceId,ratePerMinute,maxAmount,maxDurationSeconds:duration,startBy,holdExpiresAt},now);
 }
 export async function createQuote(request:Request,body:Record<string,unknown>) {
   const customer=checkedCustomer(body.customer);const maxAmount=checkedAmount(body.maxAmount);const duration=checkedDuration(body.maxDurationSeconds);const service=checkedService(body.serviceId);
