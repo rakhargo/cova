@@ -56,4 +56,17 @@ The funding panel links directly to the [Paxos Testnet Faucet](https://faucet.pa
 
 ## Public pilot gate
 
+Router deployed on Arbitrum Sepolia: [`0xe8ba68458e932921f5401f48eb36ed881255db5a`](https://sepolia.arbiscan.io/address/0xe8ba68458e932921f5401f48eb36ed881255db5a#code). The source is verified on Arbiscan. Receipt, block, vault/token checks and EIP-712 checks are recorded in `deployments/arbitrum-sepolia-session.json`.
+
+To deploy a new Router using the Foundry script, load an ignored environment file containing `ARB_SEPOLIA_RPC_URL`, `DEPLOYER_PRIVATE_KEY`, `COVA_SESSION_VAULT_ADDRESS` and `USDG_ADDRESS`, then run:
+
+```bash
+forge script contracts/script/DeploySessionRouter.s.sol:DeploySessionRouter \
+  --root contracts --rpc-url "$ARB_SEPOLIA_RPC_URL" --broadcast
+```
+
+The provider adapter is a separate process. For this demo it runs locally against the public Router; Vercel hosts the checkout and quote/start/stop APIs. Start the adapter with the server-only configuration loaded and `npm run session:provider`. It runs an illustrative hash workload and permissionlessly finalizes sessions at their signed time cap. It is not a permanently hosted compute provider.
+
+Validation on 2026-10-04: 107 Foundry tests passed (3 opt-in fork tests skipped), 48 unit tests passed, and the entire 11-test browser suite passed. An actual local API/SDK/Anvil flow deposited 100 MockUSDG, reserved 20, billed 122 seconds at 0.50/minute, paid 1.016666 to the provider, and released 18.983334. Customer available balance ended at 98.983334. The public demo customer wallet had zero USDG and zero Cova available balance at verification time; public funded settlement still requires official test USDG from Paxos and wallet deposit.
+
 The Router constructor only accepts CovaVault v2, its configured USDG, and chain IDs 421614 or local Anvil. Testnet deployment must record the actual receipt, address and block and verify runtime, constructor configuration, EIP-712 domain and source. A funded public E2E requires separate customer, provider and relayer accounts plus official test USDG and gas. Record chain receipts and resulting balances before claiming the pilot worked. A test-wallet session is not customer traction or product-market fit.

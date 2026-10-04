@@ -1,0 +1,9 @@
+.env*
+.superpowers/
+.next*
+node_modules/
+contracts/out/
+contracts/cache/
+local-deployment.json
+test-results/
+*.tsbuildinfo
