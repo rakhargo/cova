@@ -233,11 +233,11 @@ Demo Mode follows the same accounting with labelled simulated roles. A single re
 
 ## Future Roadmap
 
-1. Fund customer/merchant wallets and record the full public-network USDG demo.
-2. Complete the frontend redesign, then host a shared demo URL.
-3. Consider shared receipt/reference history, then EIP-712 authorizations and a small merchant SDK after the live demo is stable.
+1. Deploy vault v2 with a fresh funded testnet wallet and update frontend configuration.
+2. Fund separate customer/merchant wallets, verify the full public-network USDG flow and record the demo.
+3. Host the integrated frontend at a shared demo URL.
 
-Arya's assigned first task is frontend redesign only; ownership of other remaining work is undecided. See `docs/TEAM-NEXT-STEPS.md` for acceptance checks and his ready-to-use brief. Dependency advisories and a security audit must be addressed before production use.
+Arya completed the frontend redesign; the source also includes signed authorizations, a merchant SDK and shared receipts. Ownership of remaining work is undecided. See `docs/TEAM-NEXT-STEPS.md` for current status and the original redesign brief. Dependency advisories and a security audit must be addressed before production use.
 
 Later: relayers, merchant APIs, embedded checkout, account abstraction, multiple settlement assets, merchant analytics and carefully scoped dispute extensions.
 
