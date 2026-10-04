@@ -45,7 +45,7 @@ USDG is the actual reserved and settled asset on Arbitrum Sepolia. Its official 
 
 `0xFFC95faa3d63Cde504a05B567C600B78C0b41892`
 
-Verified on 2026-10-03 against [Paxos's USDG test network documentation](https://docs.paxos.com/guides/stablecoin/usdg/testnet) and live RPC (`symbol() = USDG`, `decimals() = 6`, deployed bytecode). This is the token address, not its supply-controller address. Obtain test USDG using the [Paxos test crypto guide](https://docs.paxos.com/guides/developer/fund-sandbox-with-test-crypto); follow its Paxos Testnet Faucet link. Faucet access/availability is managed by Paxos. Obtain Arbitrum Sepolia ETH separately using a compatible gas faucet.
+Verified on 2026-10-03 against [Paxos's USDG test network documentation](https://docs.paxos.com/guides/stablecoin/usdg/testnet) and live RPC (`symbol() = USDG`, `decimals() = 6`, deployed bytecode). This is the token address, not its supply-controller address. Obtain test USDG through the [Paxos Testnet Faucet](https://faucet.paxos.com/). Select Arbitrum Sepolia if offered. Faucet support for that network and access from Indonesia are unverified; follow Paxos eligibility and access requirements. Obtain Arbitrum Sepolia ETH separately for gas.
 
 ## Architecture
 
@@ -57,11 +57,16 @@ flowchart LR
   M[Merchant wallet] -->|Capture actual amount| V
   V -->|Direct USDG transfer| M
   M -->|Release unused reservation| V
+  P[Provider quote API] -->|EIP-712 quote| UI
+  UI -->|Customer-signed hold| R[CovaSessionRouter]
+  R -->|Reserve, rate x chain time, settle| V
+  R -->|Exact USDG session payment| P
+  R -->|Release unused amount| V
   X[Anyone after expiry] -->|Release expired hold| V
   V -->|Available balance withdrawal| C
 ```
 
-No backend, database, admin, upgradeability or project token. Current source adds EIP-712 authorizations and a reusable SDK; the existing public deployment remains v1 until the separately planned v2 deployment. Wallet authorization is enforced by the contract. The frontend discovers hold IDs through paginated contract getters and reads money/status directly from state, at a consistent block. Local browser storage stores optional descriptions and receipt links; it never supplies balances or hold status. Descriptions are hashed into the onchain reference; other browsers see the reference ID and generic title.
+The vault and session Router have no admin, upgradeability or project token. The optional timed checkout has a small server API for provider quotes and customer-approved relay transactions; it does not hold customer keys or determine settlement amounts. Read [docs/SESSION-CHECKOUT.md](docs/SESSION-CHECKOUT.md) for its trust boundary, local provider, configuration and testnet gate. The frontend reads money and status from contract state. Local browser storage stores optional direct-hold descriptions and receipt links; it never supplies balances or hold status.
 
 ## Contracts
 
@@ -130,7 +135,7 @@ npm run local:deploy
 npm run test:integration
 ```
 
-The local deploy command creates a **test-only MockUSDG fixture**, funds Anvil account 0, deploys CovaVault and writes `.env.anvil` plus `local-deployment.json`. It never deploys a project token to Arbitrum and never overwrites `.env.local`. The well-known test mnemonic is exclusively for Anvil; use the accounts printed by Anvil with a disposable development wallet. Account 0 is the customer and account 1 is the merchant.
+The local deploy command creates a **test-only MockUSDG fixture**, funds Anvil account 0, deploys CovaVault, its session Router and writes `.env.anvil` plus `local-deployment.json`. It never deploys a project token to Arbitrum and never overwrites `.env.local`. The well-known mnemonic and generated provider/relayer keys are exclusively for local Anvil; never use them on a public network. Account 0 is the customer and account 1 is the merchant.
 
 Start the frontend with the generated environment (Bash):
 
@@ -140,6 +145,8 @@ source .env.anvil
 set +a
 npm run dev
 ```
+
+For the reference session provider, load the same generated environment in another terminal and run `npm run session:provider`. It watches confirmed Router state and starts a local deterministic hash workload only after session start. The workload demonstrates the integration boundary; it is not proof of offchain service quality.
 
 Restart the frontend when changing its environment. Explicit shell values override `.env.local`. Local Anvil transactions have local receipts and **no Arbiscan links**. The app labels the local network; MockUSDG is not Paxos USDG.
 
@@ -231,9 +238,12 @@ The GitHub Actions workflow runs TypeScript, lint, domain tests, Foundry unit/fu
 
 Demo Mode follows the same accounting with labelled simulated roles. A single real wallet may authorize itself, but switching views still uses that actual wallet's onchain permissions; the intended demo uses two separate wallets.
 
+The metered checkout is a separate, non-mock flow. It requests a provider-signed rate quote, shows the provider, 0.50 USDG/minute, maximum budget, 40-minute limit and expiry, then asks the connected customer to sign a quote-bound hold. The backend relays session start; work starts only after confirmation. Customer stop is signed and relayed; the Router charges the displayed rate against confirmed duration and returns unused funds. Testnet enablement needs a deployed Router and dedicated provider/relayer accounts. Local commands and its limitations are in [docs/SESSION-CHECKOUT.md](docs/SESSION-CHECKOUT.md).
+
 ## Known Limitations
 
 - The public vault is deployed and verified; the funded two-wallet Arbitrum payment lifecycle remains to be recorded.
+- The metered Router source and local test flow are implemented, but a public Router deployment and funded public session remain pending. The session API stays disabled until dedicated server-only provider and relayer keys are configured.
 - Frontend hosting at a shared public URL remains to be set up; local development/production previews are available.
 - The current public v2 vault supports both direct customer transactions and EIP-712 signed authorizations. A funded public two-wallet payment flow is still pending.
 - Expiry cleanup requires a transaction; no scheduler runs automatically.
