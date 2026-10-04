@@ -13,6 +13,16 @@
   "provider": "0xf8D35cE0E4d343a36D4D6008c9eFaa1D2cBb146b",
   "relayer": "0xAd2f1f58FE7DDBA783d4ab299A2ff1AEA0aAae49",
   "quoteDigestMatchesViem": true,
+  "frontend": {
+    "productionUrl": "https://cova-zeta.vercel.app",
+    "deploymentUrl": "https://cova-gc1nsvqkr-rakhargos-projects.vercel.app",
+    "deploymentId": "dpl_hEMCvtBZPF9Ti8aG1BLKUB6mUtgL",
+    "productionBuildPassed": true,
+    "publicHttpStatus": 200,
+    "sessionApiConfigurationVerified": true,
+    "clientSecretScanPassed": true,
+    "fundedPublicSettlement": "pending: customer needs official test USDG and vault deposit"
+  },
   "sourceVerification": {
     "provider": "Arbiscan",
     "status": "verified",

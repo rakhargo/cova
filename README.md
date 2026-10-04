@@ -4,6 +4,8 @@
 
 Reserve now. Settle later.
 
+**Live demo:** [cova-zeta.vercel.app](https://cova-zeta.vercel.app) · Arbitrum Sepolia with official Paxos USDG. [Timed checkout and deployment details](docs/SESSION-CHECKOUT.md).
+
 ## Problem
 
 A simple stablecoin transfer settles the entire amount immediately. A rental, booking or charging session often needs a payment guarantee before its final price is known. Charging a maximum upfront forces a later refund and custom accounting.

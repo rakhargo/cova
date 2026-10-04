@@ -56,6 +56,8 @@ The funding panel links directly to the [Paxos Testnet Faucet](https://faucet.pa
 
 ## Public pilot gate
 
+Live frontend and APIs: [cova-zeta.vercel.app](https://cova-zeta.vercel.app). Public smoke checks returned HTTP 200 for the frontend and the expected insufficient-balance response for the unfunded customer. Nine client JavaScript assets were checked for the dedicated signer secrets; no matches were found.
+
 Router deployed on Arbitrum Sepolia: [`0xe8ba68458e932921f5401f48eb36ed881255db5a`](https://sepolia.arbiscan.io/address/0xe8ba68458e932921f5401f48eb36ed881255db5a#code). The source is verified on Arbiscan. Receipt, block, vault/token checks and EIP-712 checks are recorded in `deployments/arbitrum-sepolia-session.json`.
 
 To deploy a new Router using the Foundry script, load an ignored environment file containing `ARB_SEPOLIA_RPC_URL`, `DEPLOYER_PRIVATE_KEY`, `COVA_SESSION_VAULT_ADDRESS` and `USDG_ADDRESS`, then run:
